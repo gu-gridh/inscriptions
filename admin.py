@@ -8,8 +8,36 @@ from saintsophia.utils import get_fields, DEFAULT_FIELDS, DEFAULT_EXCLUDE
 # from rangefilter.filters import NumericRangeFilter
 # from django.contrib.admin import EmptyFieldListFilter
 
-@admin.register(Place)
-class PlaceAdmin(admin.ModelAdmin,):
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
+    list_display = ['text']
+    search_fields = ['text']
+    
+@admin.register(Language)
+class LanguageAdmin(admin.ModelAdmin):
+    list_display = ['text']
+    search_fields = ['text']
+    
+    
+@admin.register(MeshTechnique)
+class MeshTechniqueAdmin(admin.ModelAdmin):
+    list_display = ['text']
+    search_fields = ['text']
+    
+    
+@admin.register(ImageType)
+class ImageTypeAdmin(admin.ModelAdmin):
+    list_display = ['text']
+    search_fields = ['text']
+    
+    
+@admin.register(InscriptionType)
+class InscriptionTypeAdmin(admin.ModelAdmin):
+    list_display = ['text']
+    search_fields = ['text']
+
+@admin.register(Panel)
+class PanelAdmin(admin.ModelAdmin,):
     display_raw = True
-    list_display = ['name', 'geometry']
+    list_display = ['title', 'geometry', 'room']
     search_fields = ['name']
