@@ -8,7 +8,7 @@ router = routers.DefaultRouter()
 endpoint = utils.build_app_endpoint("inscriptions")
 documentation = utils.build_app_api_documentation("inscriptions", endpoint)
 
-# router.register(rf'{endpoint}/geojson/place', views.PlaceGeoViewSet, basename='place on geojson')
+router.register(rf'{endpoint}/panel', views.PanelViewSet, basename='panel information')
 
 urlpatterns = [
     path('', include(router.urls)),

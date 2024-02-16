@@ -35,9 +35,16 @@ class ImageTypeAdmin(admin.ModelAdmin):
 class InscriptionTypeAdmin(admin.ModelAdmin):
     list_display = ['text']
     search_fields = ['text']
+    
+
+@admin.register(Documentation)
+class DocumentationAdmin(admin.ModelAdmin):
+    list_display = ['short_title']
+    search_fields = ['short_title', 'observation']
+    
 
 @admin.register(Panel)
 class PanelAdmin(admin.ModelAdmin,):
     display_raw = True
-    list_display = ['title', 'geometry', 'room']
-    search_fields = ['name']
+    list_display = ['title', 'room']
+    search_fields = ['title', 'room']
