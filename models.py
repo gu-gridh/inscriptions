@@ -96,6 +96,7 @@ class Documentation(abstract.AbstractBaseModel):
 class Panel(abstract.AbstractBaseModel):
     title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("title"), help_text=_("this field refers to the panel designation"))
     room = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("room"), help_text=_("this field refers to the room in which the panel stands"))
+    geometry = models.GeometryField(verbose_name=_("geometry"), blank=True, null=True)
     documentation = models.ManyToManyField(Documentation, blank=True, verbose_name=_("documentation"), default=None)
     spatial_position = ArrayField(models.FloatField(), size=3, default=list, help_text=_("Format: 3 comma-separated float numbers, e.g.: 0.0, 1.1, 2.2"))
     spatial_direction = ArrayField(models.FloatField(), size=3, default=list, help_text=_("Format: 3 comma-separated float numbers, e.g.: 0.0, 1.1, 2.2"))

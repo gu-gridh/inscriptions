@@ -13,6 +13,15 @@ class PanelSerializer(DynamicDepthSerializer):
         fields = get_fields(Panel, exclude=DEFAULT_FIELDS)+ ['id']
         
         
+class PanelGeoSerializer(GeoFeatureModelSerializer):
+
+    class Meta:
+        model = Panel
+        fields = get_fields(Panel, exclude=DEFAULT_FIELDS)+ ['id']
+        geo_field = 'geometry'
+        depth = 1
+        
+        
 class InscriptionSerializer(DynamicDepthSerializer):
 
     class Meta:

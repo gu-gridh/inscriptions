@@ -4,6 +4,7 @@ from django.utils.html import format_html
 from django.contrib.gis import admin
 from django.utils.translation import gettext_lazy as _
 from saintsophia.utils import get_fields, DEFAULT_FIELDS, DEFAULT_EXCLUDE
+from leaflet.admin import LeafletGeoAdmin
 # from admin_auto_filters.filters import AutocompleteFilter
 # from rangefilter.filters import NumericRangeFilter
 # from django.contrib.admin import EmptyFieldListFilter
@@ -50,10 +51,11 @@ class DocumentationAdmin(admin.ModelAdmin):
     
 
 @admin.register(Panel)
-class PanelAdmin(admin.ModelAdmin,):
+class PanelAdmin(LeafletGeoAdmin, admin.ModelAdmin):
     display_raw = True
     list_display = ['title', 'room']
     search_fields = ['title', 'room']
+    filter_horizontal = ['tags']
     
 
 @admin.register(Inscription)

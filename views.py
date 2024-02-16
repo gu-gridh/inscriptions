@@ -9,9 +9,18 @@ import json
 
 
 class PanelViewSet(DynamicDepthViewSet):
+    # this view is redundant and should be erased in a second time, unless specific fields need to be potrayed in here
     queryset = models.Panel.objects.all().order_by('title')
     serializer_class = serializers.PanelSerializer
-    filterset_fields = get_fields(models.Panel, exclude=DEFAULT_FIELDS+['spatial_position', 'spatial_direction'])
+    filterset_fields = get_fields(models.Panel, exclude=DEFAULT_FIELDS+['geometry', 'spatial_position', 'spatial_direction'])
+
+
+class PanelGeoViewSet(GeoViewSet):
+    queryset = models.Panel.objects.all().order_by('id')
+    serializer_class = serializers.PanelGeoSerializer
+    filterset_fields = get_fields(models.Panel, exclude=DEFAULT_FIELDS + ['geometry', 'spatial_position', 'spatial_direction'])
+    bbox_filter_field = 'geometry'
+    bbox_filter_include_overlapping = True
     
     
 class InscriptionViewSet(DynamicDepthViewSet):
