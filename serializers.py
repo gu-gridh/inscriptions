@@ -13,3 +13,15 @@ class PanelSerializer(DynamicDepthSerializer):
         fields = get_fields(Panel, exclude=DEFAULT_FIELDS)+ ['id']
         
         
+class InscriptionSerializer(DynamicDepthSerializer):
+
+    class Meta:
+        model = Inscription
+        fields = get_fields(Inscription, exclude=DEFAULT_FIELDS)+ ['id']
+        
+        
+class TIFFImageSerializer(DynamicDepthSerializer):
+    
+    class Meta:
+        model = Image
+        fields = get_fields(Image, exclude=DEFAULT_FIELDS)+ ['id']

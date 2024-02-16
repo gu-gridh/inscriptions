@@ -119,7 +119,7 @@ class PanelOrInscription(models.IntegerChoices):
     INSCRIPTION = 2, "Inscription"
     
 
-class Image(abstract.AbstractImageModel):
+class Image(abstract.AbstractTIFFImageModel):
     # title = models.CharField(max_length=1024, null=True, blank=True, verbose_name=_("title"))
     panel_or_inscription = models.IntegerField(choices=PanelOrInscription.choices)
     panel = models.ForeignKey(Panel, null=True, blank=True, on_delete=models.CASCADE, related_name="panel")
