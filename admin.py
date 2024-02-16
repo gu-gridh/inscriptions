@@ -48,3 +48,17 @@ class PanelAdmin(admin.ModelAdmin,):
     display_raw = True
     list_display = ['title', 'room']
     search_fields = ['title', 'room']
+    
+
+@admin.register(Inscription)
+class InscriptionAdmin(admin.ModelAdmin,):
+    display_raw = True
+    list_display = ['title', 'language', 'panel']
+    search_fields = ['title', 'language', 'panel']
+    
+    
+@admin.register(Image)
+class ImageAdmin(admin.ModelAdmin,):
+    display_raw = True
+    list_display = ['panel', 'inscription', 'type_of_image']
+    search_fields = ['panel', 'inscription', 'type_of_image']
