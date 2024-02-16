@@ -74,6 +74,14 @@ class InscriptionType(abstract.AbstractTagModel):
 
 # DEFINE OBJECTS MODELS
 
+class Author(abstract.AbstractBaseModel):
+    firstname = models.CharField(max_length=256, blank=True, null=True)
+    lastname = models.CharField(max_length=256, blank=True, null=True)
+
+    def __str__(self) -> str:
+        return f"{self.firstname} {self.lastname}"
+
+
 class Documentation(abstract.AbstractBaseModel):
     short_title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("short title"), help_text=_("documentation identifier"))
     observation = RichTextField(null=True, blank=True, help_text=("Write documentation here"))
@@ -106,6 +114,8 @@ class Inscription(abstract.AbstractBaseModel):
     language = models.ForeignKey(Language, on_delete=models.SET_NULL, blank=True, null=True)
     panel = models.ForeignKey(Panel, on_delete=models.CASCADE, blank=True, null=True)
     type_of_inscription = models.ManyToManyField(InscriptionType, blank=True)
+    tags = models.ManyToManyField(Tag, blank=True, help_text=_("Tags attached to the inscription"))
+    author = models.ForeignKey(Author, on_delete=models.SET_NULL, blank=True, null=True)
     
     def __str__(self) -> str:
         return self.title
@@ -150,3 +160,15 @@ class Image(abstract.AbstractTIFFImageModel):
                 ),
             )
         ]
+        
+        
+class ObjectRTI(abstract.AbstractBaseModel):
+    url = models.CharField(max_length=1024, blank=True, null=True, verbose_name=_("URL to location in storage"))
+    panel = models.ForeignKey(Panel, null=True, blank=True, on_delete=models.CASCADE)
+    
+    def __str__(self) -> str:
+        return f"{self.panel}"
+    
+    class Meta:
+        verbose_name = _("Object RTI")
+        verbose_name_plural = _("Objects RTI")

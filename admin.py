@@ -37,6 +37,12 @@ class InscriptionTypeAdmin(admin.ModelAdmin):
     search_fields = ['text']
     
 
+@admin.register(Author)
+class AuthorAdmin(admin.ModelAdmin):
+    list_display = ['firstname', 'lastname']
+    search_fields = ['firstname', 'lastname']
+    
+
 @admin.register(Documentation)
 class DocumentationAdmin(admin.ModelAdmin):
     list_display = ['short_title']
@@ -62,3 +68,10 @@ class ImageAdmin(admin.ModelAdmin,):
     display_raw = True
     list_display = ['panel', 'inscription', 'type_of_image']
     search_fields = ['panel', 'inscription', 'type_of_image']
+    
+
+@admin.register(ObjectRTI)
+class ObjectRTIAdmin(admin.ModelAdmin):
+    display_raw = True
+    list_display = ['panel']
+    search_fields = ['panel', 'url']

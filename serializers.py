@@ -25,3 +25,10 @@ class TIFFImageSerializer(DynamicDepthSerializer):
     class Meta:
         model = Image
         fields = get_fields(Image, exclude=DEFAULT_FIELDS)+ ['id']
+        
+        
+class ObjectRTISerializer(DynamicDepthSerializer):
+
+    class Meta:
+        model = ObjectRTI
+        fields = get_fields(ObjectRTI, exclude=DEFAULT_FIELDS)+ ['id']

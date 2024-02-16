@@ -10,14 +10,15 @@ documentation = utils.build_app_api_documentation("inscriptions", endpoint)
 
 router.register(rf'{endpoint}/panel', views.PanelViewSet, basename='panels information')
 router.register(rf'{endpoint}/image', views.IIIFImageViewSet, basename='image')
+router.register(rf'{endpoint}/object-rti', views.ObjectRTIViewSet, basename='object RTI')
 
 urlpatterns = [
     path('', include(router.urls)),
 
     # Automatically generated views
     *utils.get_model_urls('inscriptions', endpoint, 
-        exclude=['panel', 'image']),
+        exclude=['panel', 'image', 'objectrti']),
 
-    *utils.get_model_urls('inscriptions', f'{endpoint}', exclude=['place']),
+    *utils.get_model_urls('inscriptions', f'{endpoint}', exclude=['panel', 'image', 'objectrti']),
     *documentation
 ]
