@@ -75,3 +75,10 @@ class ObjectRTIAdmin(admin.ModelAdmin):
     display_raw = True
     list_display = ['panel']
     search_fields = ['panel', 'url']
+    
+    
+@admin.register(ObjectMesh3D)
+class ObjectMesh3DAdmin(admin.ModelAdmin):
+    display_raw = True
+    list_display = ['panel']
+    search_fields = ['panel', 'url']

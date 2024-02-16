@@ -32,3 +32,10 @@ class ObjectRTISerializer(DynamicDepthSerializer):
     class Meta:
         model = ObjectRTI
         fields = get_fields(ObjectRTI, exclude=DEFAULT_FIELDS)+ ['id']
+        
+        
+class ObjectMesh3DSerializer(DynamicDepthSerializer):
+
+    class Meta:
+        model = ObjectMesh3D
+        fields = get_fields(ObjectMesh3D, exclude=DEFAULT_FIELDS)+ ['id']

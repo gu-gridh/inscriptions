@@ -38,6 +38,12 @@ class IIIFImageViewSet(DynamicDepthViewSet):
     
     
 class ObjectRTIViewSet(DynamicDepthViewSet):
-    queryset = models.ObjectRTI.objects.all()
+    queryset = models.ObjectRTI.objects.all().order_by('id')
     serializer_class = serializers.ObjectRTISerializer
     filterset_fields = get_fields(models.ObjectRTI, exclude=DEFAULT_FIELDS)
+    
+    
+class ObjectRTIViewSet(DynamicDepthViewSet):
+    queryset = models.ObjectMesh3D.objects.all().order_by('id')
+    serializer_class = serializers.ObjectMesh3DSerializer
+    filterset_fields = get_fields(models.ObjectMesh3D, exclude=DEFAULT_FIELDS)

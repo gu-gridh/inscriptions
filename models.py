@@ -172,3 +172,15 @@ class ObjectRTI(abstract.AbstractBaseModel):
     class Meta:
         verbose_name = _("Object RTI")
         verbose_name_plural = _("Objects RTI")
+        
+        
+class ObjectMesh3D(abstract.AbstractBaseModel):
+    url = models.CharField(max_length=1024, blank=True, null=True, verbose_name=_("URL to location in storage"))
+    panel = models.ForeignKey(Panel, null=True, blank=True, on_delete=models.CASCADE)
+    
+    def __str__(self) -> str:
+        return f"{self.panel}"
+    
+    class Meta:
+        verbose_name = _("Object 3D Mesh")
+        verbose_name_plural = _("Objects 3D Mesh")
