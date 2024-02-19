@@ -98,8 +98,8 @@ class Panel(abstract.AbstractBaseModel):
     room = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("room"), help_text=_("this field refers to the room in which the panel stands"))
     geometry = models.GeometryField(verbose_name=_("geometry"), blank=True, null=True)
     documentation = models.ManyToManyField(Documentation, blank=True, verbose_name=_("documentation"), default=None)
-    spatial_position = ArrayField(models.FloatField(), size=3, default=list, help_text=_("Format: 3 comma-separated float numbers, e.g.: 0.0, 1.1, 2.2"))
-    spatial_direction = ArrayField(models.FloatField(), size=3, default=list, help_text=_("Format: 3 comma-separated float numbers, e.g.: 0.0, 1.1, 2.2"))
+    spatial_position = ArrayField(models.FloatField(), size=3, default=list, help_text=_("Format: 3 comma-separated float numbers, e.g.: 0.0, 1.1, 2.2"), blank=True, null=True)
+    spatial_direction = ArrayField(models.FloatField(), size=3, default=list, help_text=_("Format: 3 comma-separated float numbers, e.g.: 0.0, 1.1, 2.2"), blank=True, null=True)
     tags = models.ManyToManyField(Tag, blank=True, help_text=_("Tags attached to the panel"))
     
     def __str__(self) -> str:
@@ -139,7 +139,7 @@ class Image(abstract.AbstractTIFFImageModel):
     type_of_image = models.ForeignKey(ImageType, on_delete=models.SET_NULL, blank=True, null=True, related_name="image_type")
     
     def __str__(self) -> str:
-        return f"Panel {self.panel}, {self.type_of_image}"
+        return f"Image for panel {self.panel}, room {self.panel.room}"
 
     class Meta:
         verbose_name = _("Image")
