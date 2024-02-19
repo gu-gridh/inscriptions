@@ -103,7 +103,7 @@ class Panel(abstract.AbstractBaseModel):
     tags = models.ManyToManyField(Tag, blank=True, help_text=_("Tags attached to the panel"))
     
     def __str__(self) -> str:
-        return self.title
+        return f"Panel {self.title}"
 
     class Meta:
         verbose_name = _("Panel")
@@ -119,7 +119,7 @@ class Inscription(abstract.AbstractBaseModel):
     author = models.ForeignKey(Author, on_delete=models.SET_NULL, blank=True, null=True)
     
     def __str__(self) -> str:
-        return self.title
+        return f"Inscription {self.title}"
 
     class Meta:
         verbose_name = _("Inscription")
@@ -139,7 +139,7 @@ class Image(abstract.AbstractTIFFImageModel):
     type_of_image = models.ForeignKey(ImageType, on_delete=models.SET_NULL, blank=True, null=True, related_name="image_type")
     
     def __str__(self) -> str:
-        return f"Image for panel {self.panel}, room {self.panel.room}"
+        return f"Image for panel {self.panel}"
 
     class Meta:
         verbose_name = _("Image")
