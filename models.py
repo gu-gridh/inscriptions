@@ -133,7 +133,7 @@ class PanelOrInscription(models.IntegerChoices):
 class Image(abstract.AbstractTIFFImageModel):
     # title = models.CharField(max_length=1024, null=True, blank=True, verbose_name=_("title"))
     panel_or_inscription = models.IntegerField(choices=PanelOrInscription.choices)
-    panel = models.ForeignKey(Panel, null=True, blank=True, on_delete=models.CASCADE, related_name="panel")
+    panel = models.ForeignKey(Panel, null=True, blank=True, on_delete=models.CASCADE, related_name="images")
     inscription = models.ForeignKey(Inscription, null=True, blank=True, on_delete=models.CASCADE, related_name="inscription")
     
     type_of_image = models.ForeignKey(ImageType, on_delete=models.SET_NULL, blank=True, null=True, related_name="image_type")
@@ -165,7 +165,7 @@ class Image(abstract.AbstractTIFFImageModel):
         
 class ObjectRTI(abstract.AbstractBaseModel):
     url = models.CharField(max_length=1024, blank=True, null=True, verbose_name=_("URL to location in storage"))
-    panel = models.ForeignKey(Panel, null=True, blank=True, on_delete=models.CASCADE)
+    panel = models.ForeignKey(Panel, null=True, blank=True, on_delete=models.CASCADE, related_name="rti")
     
     def __str__(self) -> str:
         return f"{self.panel}"
@@ -177,7 +177,7 @@ class ObjectRTI(abstract.AbstractBaseModel):
         
 class ObjectMesh3D(abstract.AbstractBaseModel):
     url = models.CharField(max_length=1024, blank=True, null=True, verbose_name=_("URL to location in storage"))
-    panel = models.ForeignKey(Panel, null=True, blank=True, on_delete=models.CASCADE)
+    panel = models.ForeignKey(Panel, null=True, blank=True, on_delete=models.CASCADE, related_name="mesh")
     
     def __str__(self) -> str:
         return f"{self.panel}"
