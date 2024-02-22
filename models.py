@@ -34,19 +34,6 @@ class Language(abstract.AbstractTagModel):
         return str(self)
     
     
-class MeshTechnique(abstract.AbstractTagModel):
-    
-    class Meta:
-        verbose_name = _("3D Mesh Technique")
-        verbose_name_plural = _("3D Mesh Techniques")
-
-    def __str__(self) -> str:
-        return self.text
-    
-    def __repr__(self) -> str:
-        return str(self)
-    
-    
 class ImageType(abstract.AbstractTagModel):
     
     class Meta:
@@ -114,7 +101,7 @@ class Inscription(abstract.AbstractBaseModel):
     alt_title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("alt_title"), help_text=_("this field needs to be filled with an alternative designation"))
     language = models.ForeignKey(Language, on_delete=models.SET_NULL, blank=True, null=True)
     panel = models.ForeignKey(Panel, on_delete=models.CASCADE, blank=True, null=True, related_name="inscriptions")
-    type_of_inscription = models.ManyToManyField(InscriptionType, blank=True)
+    type_of_inscription = models.ForeignKey(InscriptionType, on_delete=models.SET_NULL,  blank=True, null=True)
     tags = models.ManyToManyField(Tag, blank=True, help_text=_("Tags attached to the inscription"))
     author = models.ForeignKey(Author, on_delete=models.SET_NULL, blank=True, null=True)
     
@@ -164,6 +151,7 @@ class Image(abstract.AbstractTIFFImageModel):
         
         
 class ObjectRTI(abstract.AbstractBaseModel):
+    title = models.CharField(max_length=256, blank=True, null=True, verbose_name=_("name of the RTI object"))
     url = models.CharField(max_length=1024, blank=True, null=True, verbose_name=_("URL to location in storage"))
     panel = models.ForeignKey(Panel, null=True, blank=True, on_delete=models.CASCADE, related_name="rti")
     
@@ -178,6 +166,7 @@ class ObjectRTI(abstract.AbstractBaseModel):
 class ObjectMesh3D(abstract.AbstractBaseModel):
     url = models.CharField(max_length=1024, blank=True, null=True, verbose_name=_("URL to location in storage"))
     panel = models.ForeignKey(Panel, null=True, blank=True, on_delete=models.CASCADE, related_name="mesh")
+    number_of_triangles = models.IntegerField(null=True, blank=True)
     
     def __str__(self) -> str:
         return f"{self.panel}"
