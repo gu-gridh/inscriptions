@@ -113,7 +113,7 @@ class Inscription(abstract.AbstractBaseModel):
     title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("title"), help_text=_("this field refers to the designation of the inscription"))
     alt_title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("alt_title"), help_text=_("this field needs to be filled with an alternative designation"))
     language = models.ForeignKey(Language, on_delete=models.SET_NULL, blank=True, null=True)
-    panel = models.ForeignKey(Panel, on_delete=models.CASCADE, blank=True, null=True)
+    panel = models.ForeignKey(Panel, on_delete=models.CASCADE, blank=True, null=True, related_name="inscriptions")
     type_of_inscription = models.ManyToManyField(InscriptionType, blank=True)
     tags = models.ManyToManyField(Tag, blank=True, help_text=_("Tags attached to the inscription"))
     author = models.ForeignKey(Author, on_delete=models.SET_NULL, blank=True, null=True)

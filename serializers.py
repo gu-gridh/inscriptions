@@ -33,8 +33,36 @@ class PanelGeoSerializer(GeoFeatureModelSerializer):
     def get_attached_3Dmesh(self, obj):
         return obj.mesh.filter(published=True).values()
     
+    
+class PanelMetadataSerializer(DynamicDepthSerializer):
+    
+    number_of_inscriptions = SerializerMethodField()
+    number_of_languages = SerializerMethodField()
+    
+    class Meta:
+        model = Panel
+        fields = get_fields(Panel, exclude=DEFAULT_FIELDS +['geometry', 
+                                                            'spatial_position', 
+                                                            'spatial_direction',
+                                                            'documentation'])+ ['id', 'number_of_inscriptions', 'number_of_languages']
+        
+    def get_number_of_inscriptions(self, obj):
+        return obj.inscriptions.count()
+    
+    def get_number_of_languages(self, obj):
+        inscriptions_on_panel = obj.inscriptions.all()
+        
+        languages = []
+        for inscription in inscriptions_on_panel:
+            languages.append(inscription.language.text)
+            
+        return len(set(languages))
+        
+        
+    
 
 class PanelCoordinatesSerializer(GeoFeatureModelSerializer):
+    
     class Meta:
         model = Panel
         fields = ['id', 'title']
