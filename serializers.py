@@ -63,11 +63,17 @@ class PanelMetadataSerializer(DynamicDepthSerializer):
 
 class PanelCoordinatesSerializer(GeoFeatureModelSerializer):
     
+    floor = SerializerMethodField()
+    
     class Meta:
         model = Panel
-        fields = ['id', 'title']
+        fields = ['id', 'title', 'floor']
         geo_field = 'geometry'
         depth = 1
+        
+    def get_floor(self, obj):
+        # the floor at which each panel can be found is the first character of the title
+        return obj.title[0]
         
         
 class InscriptionSerializer(DynamicDepthSerializer):
