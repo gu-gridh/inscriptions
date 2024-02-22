@@ -23,6 +23,12 @@ class PanelGeoViewSet(GeoViewSet):
     bbox_filter_include_overlapping = True
     
     
+class PanelCoordinatesViewSet(GeoViewSet):
+    serializer_class = serializers.PanelCoordinatesSerializer
+    queryset = models.Panel.objects.all().order_by('id')
+    filterset_fields = get_fields(models.Panel, exclude=DEFAULT_FIELDS + ['geometry', 'spatial_position', 'spatial_direction'])
+    
+    
 class InscriptionViewSet(DynamicDepthViewSet):
     queryset = models.Inscription.objects.all().order_by('title')
     serializer_class = serializers.InscriptionSerializer

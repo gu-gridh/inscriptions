@@ -32,6 +32,14 @@ class PanelGeoSerializer(GeoFeatureModelSerializer):
     
     def get_attached_3Dmesh(self, obj):
         return obj.mesh.filter(published=True).values()
+    
+
+class PanelCoordinatesSerializer(GeoFeatureModelSerializer):
+    class Meta:
+        model = Panel
+        fields = ['id', 'title']
+        geo_field = 'geometry'
+        depth = 1
         
         
 class InscriptionSerializer(DynamicDepthSerializer):
