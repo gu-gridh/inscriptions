@@ -3,9 +3,10 @@ from . import models, serializers
 from django.db.models import Q
 from saintsophia.abstract.views import DynamicDepthViewSet, GeoViewSet
 from saintsophia.abstract.models import get_fields, DEFAULT_FIELDS
-from django.db.models import Q
+# from django.db.models import Q
 from django.http import HttpResponse
 import json
+import django_filters
 
 
 class PanelViewSet(DynamicDepthViewSet):
@@ -27,12 +28,21 @@ class PanelMetadataViewSet(DynamicDepthViewSet):
     queryset = models.Panel.objects.all().order_by('title')
     serializer_class = serializers.PanelMetadataSerializer
     filterset_fields = get_fields(models.Panel, exclude=DEFAULT_FIELDS+['geometry', 'spatial_position', 'spatial_direction'])
-    
+
     
 class PanelCoordinatesViewSet(GeoViewSet):
     serializer_class = serializers.PanelCoordinatesSerializer
-    queryset = models.Panel.objects.all().order_by('id')
+    # queryset = models.Panel.objects.all().order_by('id')
     filterset_fields = get_fields(models.Panel, exclude=DEFAULT_FIELDS + ['geometry', 'spatial_position', 'spatial_direction'])
+    
+    def get_queryset(self):
+        queryset = models.Panel.objects.all().order_by('id')
+        floor = self.request.query_params.get('floor')
+        
+        if floor: 
+            queryset = queryset.filter(title__startswith=floor)
+            
+        return queryset
     
     
 class InscriptionViewSet(DynamicDepthViewSet):
