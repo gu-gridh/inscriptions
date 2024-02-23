@@ -47,7 +47,9 @@ class DocumentationAdmin(admin.ModelAdmin):
 
 @admin.register(Panel)
 class PanelAdmin(LeafletGeoAdmin, admin.ModelAdmin):
-    display_raw = True
+    # display_raw = True
+    fields = [*get_fields(Panel, exclude=['id'])]
+    readonly_fields = [*DEFAULT_FIELDS]
     filter_horizontal = ['tags']
     list_display = ['title', 'room']
     search_fields = ['title', 'room']
