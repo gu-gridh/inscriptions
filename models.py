@@ -180,3 +180,30 @@ class ObjectMesh3D(abstract.AbstractBaseModel):
     class Meta:
         verbose_name = _("Object 3D Mesh")
         verbose_name_plural = _("Objects 3D Mesh")
+        
+        
+class Transcription(abstract.AbstractBaseModel):
+    text = RichTextField(null=True, blank=True, verbose_name=_("Text of transcription"))
+    inscription = models.ForeignKey(Inscription, null=True, blank=True, on_delete=models.CASCADE, related_name="transcription")
+    author = models.ManyToManyField(Author, blank=True, verbose_name=_("Author"), default=None)
+    
+    def __str__(self) -> str:
+        return f"Transcription for inscription {self.inscription}"
+    
+    class Meta:
+        verbose_name = _("Transcription")
+        verbose_name_plural = _("Transcriptions")
+    
+
+class Translation(abstract.AbstractBaseModel):
+    text = RichTextField(null=True, blank=True, verbose_name=_("Translation text"))
+    inscription = models.ForeignKey(Inscription, null=True, blank=True, on_delete=models.CASCADE, related_name="translation")
+    author = models.ManyToManyField(Author, blank=True, verbose_name=_("Author"), default=None)
+    language = models.ManyToManyField(Language, blank=True, related_name="language", default=None)
+    
+    def __str__(self) -> str:
+        return f"Translation for inscription {self.inscription} ({self.language})"
+    
+    class Meta:
+        verbose_name = _("Translation")
+        verbose_name_plural = _("Translations")

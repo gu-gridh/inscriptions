@@ -95,3 +95,17 @@ class ObjectMesh3DAdmin(admin.ModelAdmin):
     autocomplete_fields = ['panel']
     list_display = ['panel']
     search_fields = ['panel', 'url']
+    
+    
+@admin.register(Transcription)
+class TranscriptionAdmin(admin.ModelAdmin):
+    autocomplete_fields = ['inscription']
+    list_display = ['inscription']
+    search_fields = ['inscription']
+    
+    
+@admin.register(Translation)
+class TranslationAdmin(admin.ModelAdmin):
+    autocomplete_fields = ['inscription']
+    list_display = ['inscription']
+    search_fields = ['inscription', 'language']
