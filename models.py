@@ -9,6 +9,7 @@ from django.contrib.postgres.fields import ArrayField
 # DEFINE TAG MODELS
 
 class Tag(abstract.AbstractTagModel):
+    text_ukr = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("текст (укр)"))
     
     class Meta:
         verbose_name = _("Tag")
@@ -22,6 +23,7 @@ class Tag(abstract.AbstractTagModel):
     
 
 class Language(abstract.AbstractTagModel):
+    text_ukr = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("мова (укр)"))
     
     class Meta:
         verbose_name = _("Language")
@@ -48,6 +50,7 @@ class ImageType(abstract.AbstractTagModel):
     
     
 class InscriptionType(abstract.AbstractTagModel):
+    text_ukr = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("Тип напису (укр)"))
     
     class Meta:
         verbose_name = _("Inscription Type")
@@ -62,8 +65,10 @@ class InscriptionType(abstract.AbstractTagModel):
 # DEFINE OBJECTS MODELS
 
 class Author(abstract.AbstractBaseModel):
-    firstname = models.CharField(max_length=256, blank=True, null=True)
-    lastname = models.CharField(max_length=256, blank=True, null=True)
+    firstname = models.CharField(max_length=256, blank=True, null=True, verbose_name=_("First name (eng)"))
+    lastname = models.CharField(max_length=256, blank=True, null=True, verbose_name=_("Last name (eng)"))
+    firstname_ukr = models.CharField(max_length=256, blank=True, null=True, verbose_name=_("ім'я (укр)"))
+    lastname_ukr = models.CharField(max_length=256, blank=True, null=True, verbose_name=_("прізвище (укр)"))
 
     def __str__(self) -> str:
         return f"{self.firstname} {self.lastname}"
@@ -71,7 +76,8 @@ class Author(abstract.AbstractBaseModel):
 
 class Documentation(abstract.AbstractBaseModel):
     short_title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("short title"), help_text=_("documentation identifier"))
-    observation = RichTextField(null=True, blank=True, help_text=("Write documentation here"))
+    observation = RichTextField(null=True, blank=True, verbose_name=("Observation (eng)"))
+    text_ukr = RichTextField(null=True, blank=True, verbose_name=_("Спостереження (укр)"))
     
     def __str__(self) -> str:
         return f"{self.short_title}"
