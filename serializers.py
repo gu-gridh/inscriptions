@@ -27,10 +27,12 @@ class PanelGeoSerializer(GeoFeatureModelSerializer):
     attached_photograph = SerializerMethodField()
     attached_RTI = SerializerMethodField()
     attached_3Dmesh = SerializerMethodField()   
+    list_of_languages = SerializerMethodField()
+
     
     class Meta:
         model = Panel
-        fields = get_fields(Panel, exclude=DEFAULT_FIELDS)+ ['id', 'attached_photograph', 'attached_RTI', 'attached_3Dmesh']
+        fields = get_fields(Panel, exclude=DEFAULT_FIELDS)+ ['id', 'attached_photograph', 'attached_RTI', 'attached_3Dmesh', 'list_of_languages']
         geo_field = 'geometry'
         depth = 1
         
@@ -42,6 +44,15 @@ class PanelGeoSerializer(GeoFeatureModelSerializer):
     
     def get_attached_3Dmesh(self, obj):
         return obj.mesh.filter(published=True).values()
+    
+    def get_list_of_languages(self, obj):
+        inscriptions_on_panel = obj.inscriptions.all()
+        
+        languages = []
+        for inscription in inscriptions_on_panel:
+            languages.append(inscription.language.text)
+        
+        return set(languages)
     
     
 class PanelMetadataSerializer(DynamicDepthSerializer):
