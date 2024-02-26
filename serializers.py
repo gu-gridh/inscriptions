@@ -8,10 +8,20 @@ from .models import *
 
 class PanelSerializer(DynamicDepthSerializer):
 
+    list_of_languages = SerializerMethodField()
+
     class Meta:
         model = Panel
-        fields = get_fields(Panel, exclude=DEFAULT_FIELDS)+ ['id']
+        fields = get_fields(Panel, exclude=DEFAULT_FIELDS)+ ['id', 'list_of_languages']
         
+    def get_list_of_languages(self, obj):
+        inscriptions_on_panel = obj.inscriptions.all()
+        
+        languages = []
+        for inscription in inscriptions_on_panel:
+            languages.append(inscription.language.text)
+        
+        return set(languages)
         
 class PanelGeoSerializer(GeoFeatureModelSerializer):
     attached_photograph = SerializerMethodField()
