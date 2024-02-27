@@ -4,6 +4,7 @@ from rest_framework.serializers import SerializerMethodField
 from . import models
 from saintsophia.utils import get_fields, DEFAULT_FIELDS
 from .models import *
+from django.db.models import Q
 
 
 class PanelSerializer(DynamicDepthSerializer):
@@ -27,17 +28,16 @@ class PanelGeoSerializer(GeoFeatureModelSerializer):
     attached_photograph = SerializerMethodField()
     attached_RTI = SerializerMethodField()
     attached_3Dmesh = SerializerMethodField()   
-    list_of_languages = SerializerMethodField()
 
     
     class Meta:
         model = Panel
-        fields = get_fields(Panel, exclude=DEFAULT_FIELDS)+ ['id', 'attached_photograph', 'attached_RTI', 'attached_3Dmesh', 'list_of_languages']
+        fields = get_fields(Panel, exclude=DEFAULT_FIELDS)+ ['id', 'attached_photograph', 'attached_RTI', 'attached_3Dmesh']
         geo_field = 'geometry'
         depth = 1
         
     def get_attached_photograph(self, obj):
-        return obj.images.filter(published=True).values()
+        return obj.images.filter(published=True).filter(type_of_image__text="Orthophoto").values()
     
     def get_attached_RTI(self, obj):
         return obj.rti.filter(published=True).values()
@@ -45,27 +45,22 @@ class PanelGeoSerializer(GeoFeatureModelSerializer):
     def get_attached_3Dmesh(self, obj):
         return obj.mesh.filter(published=True).values()
     
-    def get_list_of_languages(self, obj):
-        inscriptions_on_panel = obj.inscriptions.all()
-        
-        languages = []
-        for inscription in inscriptions_on_panel:
-            languages.append(inscription.language.text)
-        
-        return set(languages)
-    
     
 class PanelMetadataSerializer(DynamicDepthSerializer):
     
     number_of_inscriptions = SerializerMethodField()
     number_of_languages = SerializerMethodField()
+    list_of_languages = SerializerMethodField()
     
     class Meta:
         model = Panel
         fields = get_fields(Panel, exclude=DEFAULT_FIELDS +['geometry', 
                                                             'spatial_position', 
                                                             'spatial_direction',
-                                                            'documentation'])+ ['id', 'number_of_inscriptions', 'number_of_languages']
+                                                            'documentation'])+ ['id', 
+                                                                                'number_of_inscriptions', 
+                                                                                'number_of_languages',
+                                                                                'list_of_languages']
         
     def get_number_of_inscriptions(self, obj):
         return obj.inscriptions.count()
@@ -78,6 +73,15 @@ class PanelMetadataSerializer(DynamicDepthSerializer):
             languages.append(inscription.language.text)
             
         return len(set(languages))
+    
+    def get_list_of_languages(self, obj):
+        inscriptions_on_panel = obj.inscriptions.all()
+        
+        languages = []
+        for inscription in inscriptions_on_panel:
+            languages.append(inscription.language.text)
+        
+        return set(languages)
         
         
     
