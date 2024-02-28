@@ -52,6 +52,46 @@ class PanelCoordinatesViewSet(GeoViewSet):
                 
         return queryset
     
+class PanelInfoViewSet(DynamicDepthViewSet):
+
+    serializer_class = serializers.PanelMetadataSerializer
+
+    def list(self, request):
+        # Query Parameters 
+        # with_3D = self.request.query_params.get('with_3D')
+        # with_plan = self.request.query_params.get('with_plan')
+        # period = self.request.query_params.get('epoch')
+        # necropolis = self.request.query_params.get('necropolis')
+        # type_of_tomb = self.request.query_params.get('type')
+
+        # Filtering places 
+        number_of_panels = models.Panel.objects.all().filter(published=True).count()
+        panels = models.Panel.objects.all()
+            
+        panels_shown = panels.filter(published=True).count()
+        hidden_panels = number_of_panels - panels_shown
+
+        # plans_count =  panels.filter(id__in=list(
+        #                     models.Image.objects.filter(Q(type_of_image__text__icontains="floor plan") 
+        #                                               | Q (type_of_image__text__icontains="section"))
+        #                                                 .values_list('tomb', flat=True))).count()
+        
+        # photographs_count = places.filter(id__in=list(
+        #                     models.Image.objects.filter(type_of_image__text__icontains="photograph").values_list('tomb', flat=True))
+        #                     ).count()
+        
+
+        # threedhop_count = places.filter(id__in=list(models.Object3DHop.objects.all().values_list('tomb', flat=True))).count()
+        # pointcloud_count = places.filter(id__in=list(models.ObjectPointCloud.objects.all().values_list('tomb', flat=True))).count()
+        # objects_3d = threedhop_count + pointcloud_count
+        
+        data = {
+            'all_panels': number_of_panels,
+            'shown_panels': panels_shown,
+            'hidden_tombs': hidden_panels,
+        }
+
+        return HttpResponse(json.dumps(data))
     
 class InscriptionViewSet(DynamicDepthViewSet):
     queryset = models.Inscription.objects.all().order_by('title')

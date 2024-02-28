@@ -12,6 +12,7 @@ router.register(rf'{endpoint}/geojson/panel', views.PanelGeoViewSet, basename='p
 router.register(rf'{endpoint}/panel', views.PanelViewSet, basename='panels information')
 router.register(rf'{endpoint}/panel-metadata', views.PanelMetadataViewSet, basename='panels metadata')
 router.register(rf'{endpoint}/coordinates', views.PanelCoordinatesViewSet, basename='panels coordinates')
+router.register(rf'{endpoint}/info/panels', views.PanelInfoViewSet, basename='panels info')
 router.register(rf'{endpoint}/image', views.IIIFImageViewSet, basename='image')
 router.register(rf'{endpoint}/object-rti', views.ObjectRTIViewSet, basename='object RTI')
 router.register(rf'{endpoint}/object-mesh-3d', views.ObjectRTIViewSet, basename='object Mesh 3D')
