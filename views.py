@@ -88,7 +88,7 @@ class PanelInfoViewSet(DynamicDepthViewSet):
         data = {
             'all_panels': number_of_panels,
             'shown_panels': panels_shown,
-            'hidden_tombs': hidden_panels,
+            'hidden_panels': hidden_panels,
         }
 
         return HttpResponse(json.dumps(data))
