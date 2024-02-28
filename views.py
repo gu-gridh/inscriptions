@@ -33,15 +33,23 @@ class PanelMetadataViewSet(DynamicDepthViewSet):
 class PanelCoordinatesViewSet(GeoViewSet):
     serializer_class = serializers.PanelCoordinatesSerializer
     # queryset = models.Panel.objects.all().order_by('id')
-    filterset_fields = get_fields(models.Panel, exclude=DEFAULT_FIELDS + ['geometry', 'spatial_position', 'spatial_direction'])
+    filterset_fields = get_fields(models.Panel, exclude=DEFAULT_FIELDS + ['geometry', 'spatial_position', 'spatial_direction', 'published'])
+    
     
     def get_queryset(self):
         queryset = models.Panel.objects.all().order_by('id')
         floor = self.request.query_params.get('floor')
+        published = self.request.query_params.get('published')
         
+        if published == 'true':
+            if floor: 
+                queryset = queryset.filter(Q(title__startswith=floor) & Q(published=True))
+            else:
+                queryset = queryset.filter(Q(published=True))
+                
         if floor: 
             queryset = queryset.filter(title__startswith=floor)
-            
+                
         return queryset
     
     

@@ -92,7 +92,7 @@ class PanelCoordinatesSerializer(GeoFeatureModelSerializer):
     
     class Meta:
         model = Panel
-        fields = ['id', 'title', 'floor']
+        fields = ['id', 'title', 'floor', 'published']
         geo_field = 'geometry'
         depth = 1
         
