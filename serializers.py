@@ -26,18 +26,22 @@ class PanelSerializer(DynamicDepthSerializer):
         
 class PanelGeoSerializer(GeoFeatureModelSerializer):
     attached_photograph = SerializerMethodField()
+    attached_topography = SerializerMethodField()
     attached_RTI = SerializerMethodField()
-    attached_3Dmesh = SerializerMethodField()   
+    attached_3Dmesh = SerializerMethodField()
 
     
     class Meta:
         model = Panel
-        fields = get_fields(Panel, exclude=DEFAULT_FIELDS)+ ['id', 'attached_photograph', 'attached_RTI', 'attached_3Dmesh']
+        fields = get_fields(Panel, exclude=DEFAULT_FIELDS)+ ['id', 'attached_photograph', 'attached_topography', 'attached_RTI', 'attached_3Dmesh']
         geo_field = 'geometry'
         depth = 1
         
     def get_attached_photograph(self, obj):
         return obj.images.filter(published=True).filter(type_of_image__text="Orthophoto").values()
+    
+    def get_attached_topography(self, obj):
+        return obj.images.filter(published=True).filter(type_of_image__text="Topography").values()
     
     def get_attached_RTI(self, obj):
         return obj.rti.filter(published=True).values()
