@@ -62,7 +62,7 @@ class InscriptionAdmin(admin.ModelAdmin,):
     filter_horizontal = ['tags']
     readonly_fields = ['panel']
     list_display = ['title', 'language', 'panel', 'type_of_inscription']
-    search_fields = ['title', 'language', 'panel']
+    search_fields = ['title', 'language__text', 'panel__title']
     
     
 @admin.register(Image)
@@ -71,7 +71,7 @@ class ImageAdmin(admin.ModelAdmin,):
     readonly_fields     = ['iiif_file', 'uuid', 'image_preview', *DEFAULT_FIELDS]
     autocomplete_fields = ['panel', 'inscription']
     list_display = ['panel', 'inscription', 'type_of_image']
-    search_fields = ['panel', 'inscription', 'type_of_image']
+    search_fields = ['panel__title', 'type_of_image__text', 'iiif_file']
     list_per_page = 10
     
     def image_preview(self, obj):
@@ -86,7 +86,7 @@ class ObjectRTIAdmin(admin.ModelAdmin):
     display_raw = True
     autocomplete_fields = ['panel']
     list_display = ['panel']
-    search_fields = ['panel', 'url']
+    search_fields = ['panel__title', 'url']
     
     
 @admin.register(ObjectMesh3D)
@@ -94,18 +94,18 @@ class ObjectMesh3DAdmin(admin.ModelAdmin):
     display_raw = True
     autocomplete_fields = ['panel']
     list_display = ['panel']
-    search_fields = ['panel', 'url']
+    search_fields = ['panel__title', 'url']
     
     
 @admin.register(Transcription)
 class TranscriptionAdmin(admin.ModelAdmin):
     autocomplete_fields = ['inscription']
     list_display = ['inscription']
-    search_fields = ['inscription']
+    search_fields = ['inscription__title']
     
     
 @admin.register(Translation)
 class TranslationAdmin(admin.ModelAdmin):
     autocomplete_fields = ['inscription']
     list_display = ['inscription']
-    search_fields = ['inscription', 'language']
+    search_fields = ['inscription__title', 'language__text']
