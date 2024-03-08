@@ -60,8 +60,7 @@ class PanelMetadataSerializer(DynamicDepthSerializer):
         model = Panel
         fields = get_fields(Panel, exclude=DEFAULT_FIELDS +['geometry', 
                                                             'spatial_position', 
-                                                            'spatial_direction',
-                                                            'documentation'])+ ['id', 
+                                                            'spatial_direction'])+ ['id', 
                                                                                 'number_of_inscriptions', 
                                                                                 'number_of_languages',
                                                                                 'list_of_languages']
