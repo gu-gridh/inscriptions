@@ -123,7 +123,7 @@ class IIIFImageViewSet(DynamicDepthViewSet):
         topography_normal = topography.filter(file__contains="normal_map").annotate(custom_order=Value(4))
         
         
-        queryset = orthophotos.union(topography_blended, topography_texture, topography_normal).order_by('custom_order')
+        queryset = (orthophotos | topography_blended | topography_texture | topography_normal).order_by('custom_order')
         
         return queryset
     
