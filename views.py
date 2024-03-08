@@ -1,6 +1,6 @@
 from unittest.mock import DEFAULT
 from . import models, serializers
-from django.db.models import Q
+from django.db.models import Q, Value
 from saintsophia.abstract.views import DynamicDepthViewSet, GeoViewSet
 from saintsophia.abstract.models import get_fields, DEFAULT_FIELDS
 # from django.db.models import Q
@@ -111,9 +111,22 @@ class IIIFImageViewSet(DynamicDepthViewSet):
     Returns a count of the existing images after the application of any filter.
     """
     
-    queryset = models.Image.objects.all().order_by('id')
+    # queryset = models.Image.objects.all().order_by('id')
     serializer_class = serializers.TIFFImageSerializer
     filterset_fields = get_fields(models.Image, exclude=DEFAULT_FIELDS + ['iiif_file', 'file'])
+    
+    def get_queryset(self):
+        orthophotos = models.Image.objects.all().filter(type_of_image__text="Orthophoto").annotate(custom_order=Value(1))
+        topography = models.Image.objects.all().filter(type_of_image__text="Topography")
+        topography_blended = topography.filter(file__contains="blended_map").annotate(custom_order=Value(2))
+        topography_texture = topography.filter(file__contains="texture_map").annotate(custom_order=Value(3))
+        topography_normal = topography.filter(file__contains="normal_map").annotate(custom_order=Value(4))
+        
+        
+        queryset = orthophotos.union(topography_blended, topography_texture, topography_normal).order_by('custom_order')
+        
+        return queryset
+    
     
     
 class ObjectRTIViewSet(DynamicDepthViewSet):
