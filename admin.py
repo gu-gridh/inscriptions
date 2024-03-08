@@ -47,7 +47,7 @@ class DocumentationAdmin(admin.ModelAdmin):
 
 @admin.register(Panel)
 class PanelAdmin(LeafletGeoAdmin, admin.ModelAdmin):
-    # display_raw = True
+    display_raw = True
     fields = [*get_fields(Panel, exclude=['id'])]
     readonly_fields = [*DEFAULT_FIELDS]
     filter_horizontal = ['tags']
@@ -58,7 +58,6 @@ class PanelAdmin(LeafletGeoAdmin, admin.ModelAdmin):
 
 @admin.register(Inscription)
 class InscriptionAdmin(admin.ModelAdmin,):
-    display_raw = True
     filter_horizontal = ['tags']
     readonly_fields = ['panel']
     list_display = ['title', 'language', 'panel', 'type_of_inscription']
@@ -83,7 +82,6 @@ class ImageAdmin(admin.ModelAdmin,):
 
 @admin.register(ObjectRTI)
 class ObjectRTIAdmin(admin.ModelAdmin):
-    display_raw = True
     autocomplete_fields = ['panel']
     list_display = ['panel']
     search_fields = ['panel__title', 'url']
@@ -91,7 +89,6 @@ class ObjectRTIAdmin(admin.ModelAdmin):
     
 @admin.register(ObjectMesh3D)
 class ObjectMesh3DAdmin(admin.ModelAdmin):
-    display_raw = True
     autocomplete_fields = ['panel']
     list_display = ['panel']
     search_fields = ['panel__title', 'url']
