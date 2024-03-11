@@ -1,6 +1,6 @@
 from unittest.mock import DEFAULT
 from . import models, serializers
-from django.db.models import Q, Value
+from django.db.models import Q, Value, Case, When
 from saintsophia.abstract.views import DynamicDepthViewSet, GeoViewSet
 from saintsophia.abstract.models import get_fields, DEFAULT_FIELDS
 # from django.db.models import Q
@@ -116,14 +116,20 @@ class IIIFImageViewSet(DynamicDepthViewSet):
     filterset_fields = get_fields(models.Image, exclude=DEFAULT_FIELDS + ['iiif_file', 'file'])
     
     def get_queryset(self):
-        orthophotos = models.Image.objects.all().filter(type_of_image__text="Orthophoto").annotate(custom_order=Value(1))
+        orthophotos = models.Image.objects.all().filter(type_of_image__text="Orthophoto")
         topography = models.Image.objects.all().filter(type_of_image__text="Topography")
-        topography_blended = topography.filter(file__contains="blended_map").annotate(custom_order=Value(2))
-        topography_texture = topography.filter(file__contains="texture_map").annotate(custom_order=Value(3))
-        topography_normal = topography.filter(file__contains="normal_map").annotate(custom_order=Value(4))
+        topography_blended = topography.filter(file__contains="blended_map")
+        topography_texture = topography.filter(file__contains="texture_map")
+        topography_normal = topography.filter(file__contains="normal_map")
         
+        custom_order = Case(
+            When(type_of_image__text="Orthophoto", then=Value(1)),
+            When(file__contains="blended_map", then=Value(2)),
+            When(file__contains="texture_map", then=Value(3)),
+            When(file__contains="normal_map", then=Value(4))
+        )
         
-        queryset = (orthophotos | topography_blended | topography_texture | topography_normal).order_by('custom_order')
+        queryset = (orthophotos | topography_blended | topography_texture | topography_normal).annotate(custom_order=custom_order).order_by('custom_order')
         
         return queryset
     
