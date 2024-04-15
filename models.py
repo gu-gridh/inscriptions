@@ -85,15 +85,27 @@ class Documentation(abstract.AbstractBaseModel):
     class Meta:
         verbose_name = _("Documentation")
     
+    
+
+    
 
 class Panel(abstract.AbstractBaseModel):
     title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("title"), help_text=_("this field refers to the panel designation"))
     room = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("room"), help_text=_("this field refers to the room in which the panel stands"))
     geometry = models.GeometryField(verbose_name=_("geometry"), blank=True, null=True)
+   
     documentation = models.ManyToManyField(Documentation, blank=True, verbose_name=_("documentation"), default=None)
     spatial_position = ArrayField(models.FloatField(), size=3, default=list, help_text=_("Format: 3 comma-separated float numbers, e.g.: 0.0, 1.1, 2.2"), blank=True, null=True)
     spatial_direction = ArrayField(models.FloatField(), size=3, default=list, help_text=_("Format: 3 comma-separated float numbers, e.g.: 0.0, 1.1, 2.2"), blank=True, null=True)
     tags = models.ManyToManyField(Tag, blank=True, help_text=_("Tags attached to the panel"))
+    
+    class DataForPanel(models.IntegerChoices):
+        POSITION = (1, "Position")
+        ORTHO_MESH = (2, "Ortho and mesh")
+        TOPOGRAPHY = (3, "Topography")
+        RTI = (4, "RTI")
+    
+    data_available = models.IntegerField(choices=DataForPanel.choices, default=DataForPanel.POSITION)
     
     def __str__(self) -> str:
         return f"Panel {self.title}"
