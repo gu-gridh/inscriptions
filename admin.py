@@ -69,6 +69,8 @@ class PanelAdmin(LeafletGeoAdmin, admin.ModelAdmin):
        'MIN_ZOOM': MIN_ZOOM
     }
     
+    change_form_template = 'apps/inscriptions/panel_change_form.html'
+    
 
 @admin.register(Inscription)
 class InscriptionAdmin(admin.ModelAdmin,):
