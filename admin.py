@@ -58,7 +58,7 @@ class PanelAdmin(LeafletGeoAdmin, admin.ModelAdmin):
     fields = [*get_fields(Panel, exclude=['id'])]
     readonly_fields = [*DEFAULT_FIELDS]
     filter_horizontal = ['tags']
-    list_display = ['title', 'room']
+    list_display = ['title', 'room', 'data_available']
     search_fields = ['title', 'room']
     filter_horizontal = ['tags']
     
