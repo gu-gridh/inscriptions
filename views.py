@@ -9,6 +9,11 @@ import json
 import django_filters
 
 
+class LanguageViewSet(DynamicDepthViewSet):
+    queryset = models.Language.objects.all().order_by('text')
+    serializer_class = serializers.LanguageSerializer
+
+
 class PanelViewSet(DynamicDepthViewSet):
     # this view is redundant and should be erased in a second time, unless specific fields need to be potrayed in here
     queryset = models.Panel.objects.all().order_by('title')

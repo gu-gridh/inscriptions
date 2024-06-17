@@ -8,6 +8,7 @@ router = routers.DefaultRouter()
 endpoint = utils.build_app_endpoint("inscriptions")
 documentation = utils.build_app_api_documentation("inscriptions", endpoint)
 
+router.register(rf'{endpoint}/language', views.LanguageViewSet, basename='languages')
 router.register(rf'{endpoint}/geojson/panel', views.PanelGeoViewSet, basename='panel with geojson coordinates')
 router.register(rf'{endpoint}/panel', views.PanelViewSet, basename='panels information')
 router.register(rf'{endpoint}/panel-metadata', views.PanelMetadataViewSet, basename='panels metadata')

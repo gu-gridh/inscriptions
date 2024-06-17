@@ -7,6 +7,12 @@ from .models import *
 from django.db.models import Q
 
 
+class LanguageSerializer(DynamicDepthSerializer):
+    class Meta:
+        model = Language
+        fields = get_fields(Language, exclude=DEFAULT_FIELDS) + ['id']
+
+
 class PanelSerializer(DynamicDepthSerializer):
 
     list_of_languages = SerializerMethodField()
