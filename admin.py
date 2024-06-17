@@ -10,6 +10,13 @@ from django.conf import settings
 # from rangefilter.filters import NumericRangeFilter
 # from django.contrib.admin import EmptyFieldListFilter
 
+DEFAULT_LONGITUDE =  30.514299
+DEFAULT_LATITUDE  = 50.452890
+DEFAULT_ZOOM = 19
+MAX_ZOOM = 25
+MIN_ZOOM = 17
+
+
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
     list_display = ['text']
@@ -54,6 +61,13 @@ class PanelAdmin(LeafletGeoAdmin, admin.ModelAdmin):
     list_display = ['title', 'room']
     search_fields = ['title', 'room']
     filter_horizontal = ['tags']
+    
+    settings_overrides = {
+       'DEFAULT_CENTER': (DEFAULT_LATITUDE, DEFAULT_LONGITUDE),
+       'DEFAULT_ZOOM': DEFAULT_ZOOM,
+       'MAX_ZOOM': MAX_ZOOM,
+       'MIN_ZOOM': MIN_ZOOM
+    }
     
 
 @admin.register(Inscription)

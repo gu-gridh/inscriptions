@@ -85,9 +85,6 @@ class Documentation(abstract.AbstractBaseModel):
     class Meta:
         verbose_name = _("Documentation")
     
-    
-
-    
 
 class Panel(abstract.AbstractBaseModel):
     title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("title"), help_text=_("this field refers to the panel designation"))
@@ -100,10 +97,10 @@ class Panel(abstract.AbstractBaseModel):
     tags = models.ManyToManyField(Tag, blank=True, help_text=_("Tags attached to the panel"))
     
     class DataForPanel(models.IntegerChoices):
-        POSITION = (1, "Position")
-        ORTHO_MESH = (2, "Ortho and mesh")
-        TOPOGRAPHY = (3, "Topography")
-        RTI = (4, "RTI")
+        POSITION = (1, "1")
+        ORTHO_MESH = (2, "2")
+        TOPOGRAPHY = (3, "3")
+        RTI = (4, "4")
     
     data_available = models.IntegerField(choices=DataForPanel.choices, default=DataForPanel.POSITION)
     
