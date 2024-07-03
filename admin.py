@@ -67,6 +67,7 @@ class PanelAdmin(LeafletGeoAdmin, admin.ModelAdmin):
        'DEFAULT_ZOOM': DEFAULT_ZOOM,
        'MAX_ZOOM': MAX_ZOOM,
        'MIN_ZOOM': MIN_ZOOM,
+       'TILES' : [('GROUND FLOOR', 'https://data.dh.gu.se/tiles/saint_sophia_ground_floor/{z}/{x}/{y}.png', {'attribution': '&copy; GRIDH'})],
        'OVERLAYS': [('GROUND FLOOR', 'https://data.dh.gu.se/tiles/saint_sophia_ground_floor/{z}/{x}/{y}.png', {'attribution': '&copy; GRIDH'}),
                     ('SECOND FLOOR', 'https://data.dh.gu.se/tiles/saint_sophia_second_floor/{z}/{x}/{y}.png', {'attribution': '&copy; GRIDH'})]
     }
