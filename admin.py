@@ -12,9 +12,9 @@ from django.conf import settings
 
 DEFAULT_LONGITUDE =  30.514299
 DEFAULT_LATITUDE  = 50.452890
-DEFAULT_ZOOM = 19
-MAX_ZOOM = 25
-MIN_ZOOM = 17
+DEFAULT_ZOOM = 15
+MAX_ZOOM = 24
+MIN_ZOOM = 20
 
 
 @admin.register(Tag)
@@ -66,7 +66,9 @@ class PanelAdmin(LeafletGeoAdmin, admin.ModelAdmin):
        'DEFAULT_CENTER': (DEFAULT_LATITUDE, DEFAULT_LONGITUDE),
        'DEFAULT_ZOOM': DEFAULT_ZOOM,
        'MAX_ZOOM': MAX_ZOOM,
-       'MIN_ZOOM': MIN_ZOOM
+       'MIN_ZOOM': MIN_ZOOM,
+       'OVERLAYS': [('GROUND FLOOR', 'https://data.dh.gu.se/tiles/saint_sophia_ground_floor/{z}/{x}/{y}.png', {'attribution': '&copy; GRIDH'}),
+                    ('SECOND FLOOR', 'https://data.dh.gu.se/tiles/saint_sophia_second_floor/{z}/{x}/{y}.png', {'attribution': '&copy; GRIDH'})]
     }
     
     change_form_template = 'apps/inscriptions/panel_change_form.html'
