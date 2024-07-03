@@ -137,7 +137,7 @@ class Inscription(abstract.AbstractBaseModel):
     title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("title"), help_text=_("this field refers to the designation of the inscription"))
     alt_title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("alt_title"), help_text=_("this field needs to be filled with an alternative designation"))
     language = models.ForeignKey(Language, on_delete=models.SET_NULL, blank=True, null=True)
-    panel = models.ForeignKey(Panel, on_delete=models.CASCADE, blank=True, null=True, related_name="inscriptions")
+    panel = models.ForeignKey(Panel, on_delete=models.CASCADE, blank=True, null=True, related_name="inscriptions", verbose_name=_("Surface"))
     type_of_inscription = models.ForeignKey(InscriptionType, on_delete=models.SET_NULL,  blank=True, null=True)
     tags = models.ManyToManyField(Tag, blank=True, help_text=_("Tags attached to the inscription"))
     author = models.ForeignKey(Author, on_delete=models.SET_NULL, blank=True, null=True)
@@ -156,8 +156,8 @@ class PanelOrInscription(models.IntegerChoices):
 
 class Image(abstract.AbstractTIFFImageModel):
     # title = models.CharField(max_length=1024, null=True, blank=True, verbose_name=_("title"))
-    panel_or_inscription = models.IntegerField(choices=PanelOrInscription.choices)
-    panel = models.ForeignKey(Panel, null=True, blank=True, on_delete=models.CASCADE, related_name="images")
+    panel_or_inscription = models.IntegerField(choices=PanelOrInscription.choices, verbose_name=_("Surface or inscription"))
+    panel = models.ForeignKey(Panel, null=True, blank=True, on_delete=models.CASCADE, related_name="images", verbose_name=_("Surface"))
     inscription = models.ForeignKey(Inscription, null=True, blank=True, on_delete=models.CASCADE, related_name="inscription")
     
     type_of_image = models.ForeignKey(ImageType, on_delete=models.SET_NULL, blank=True, null=True, related_name="image_type")
@@ -190,7 +190,7 @@ class Image(abstract.AbstractTIFFImageModel):
 class ObjectRTI(abstract.AbstractBaseModel):
     title = models.CharField(max_length=256, blank=True, null=True, verbose_name=_("name of the RTI object"))
     url = models.CharField(max_length=1024, blank=True, null=True, verbose_name=_("URL to location in storage"))
-    panel = models.ForeignKey(Panel, null=True, blank=True, on_delete=models.CASCADE, related_name="rti")
+    panel = models.ForeignKey(Panel, null=True, blank=True, on_delete=models.CASCADE, related_name="rti", verbose_name=_("Surface"))
     
     def __str__(self) -> str:
         return f"{self.panel}"
@@ -202,7 +202,7 @@ class ObjectRTI(abstract.AbstractBaseModel):
         
 class ObjectMesh3D(abstract.AbstractBaseModel):
     url = models.CharField(max_length=1024, blank=True, null=True, verbose_name=_("URL to location in storage"))
-    panel = models.ForeignKey(Panel, null=True, blank=True, on_delete=models.CASCADE, related_name="mesh")
+    panel = models.ForeignKey(Panel, null=True, blank=True, on_delete=models.CASCADE, related_name="mesh", verbose_name=_("Surface"))
     number_of_triangles = models.IntegerField(null=True, blank=True)
     
     def __str__(self) -> str:
