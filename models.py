@@ -87,8 +87,8 @@ class Documentation(abstract.AbstractBaseModel):
     
 
 class Panel(abstract.AbstractBaseModel):
-    title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("title"), help_text=_("this field refers to the panel designation"))
-    room = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("room"), help_text=_("this field refers to the room in which the panel stands"))
+    title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("title"), help_text=_("this field refers to the surface designation"))
+    room = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("room"), help_text=_("this field refers to the room in which the surface stands"))
     geometry = models.GeometryField(verbose_name=_("geometry"), blank=True, null=True)
    
     documentation = models.ManyToManyField(Documentation, blank=True, verbose_name=_("documentation"), default=None)
@@ -105,10 +105,10 @@ class Panel(abstract.AbstractBaseModel):
     data_available = models.IntegerField(choices=DataForPanel.choices, default=DataForPanel.POSITION)
     
     def __str__(self) -> str:
-        return f"Panel {self.title}"
+        return f"Surface {self.title}"
 
     class Meta:
-        verbose_name = _("Panel")
+        verbose_name = _("Surface")
         
     def list_all_pk(self):
         all_pk = []
@@ -150,7 +150,7 @@ class Inscription(abstract.AbstractBaseModel):
     
         
 class PanelOrInscription(models.IntegerChoices):
-    PANEL = 1, "Panel"
+    PANEL = 1, "Surface"
     INSCRIPTION = 2, "Inscription"
     
 
@@ -163,7 +163,7 @@ class Image(abstract.AbstractTIFFImageModel):
     type_of_image = models.ForeignKey(ImageType, on_delete=models.SET_NULL, blank=True, null=True, related_name="image_type")
     
     def __str__(self) -> str:
-        return f"Image for panel {self.panel}"
+        return f"Image for surface {self.panel}"
 
     class Meta:
         verbose_name = _("Image")
