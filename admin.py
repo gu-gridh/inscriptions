@@ -1,6 +1,7 @@
 from django.contrib.gis.db import models
 from .models import *
 from django.utils.html import format_html
+from django.contrib.admin import EmptyFieldListFilter
 from django.contrib.gis import admin
 from django.utils.translation import gettext_lazy as _
 from saintsophia.utils import get_fields, DEFAULT_FIELDS, DEFAULT_EXCLUDE
@@ -61,6 +62,7 @@ class PanelAdmin(LeafletGeoAdmin, admin.ModelAdmin):
     list_display = ['title', 'room', 'data_available']
     search_fields = ['title', 'room']
     filter_horizontal = ['tags']
+    list_filter = [('spatial_position', EmptyFieldListFilter), ('spatial_direction', EmptyFieldListFilter), "data_available"]
     
     settings_overrides = {
        'DEFAULT_CENTER': (DEFAULT_LATITUDE, DEFAULT_LONGITUDE),
@@ -68,8 +70,7 @@ class PanelAdmin(LeafletGeoAdmin, admin.ModelAdmin):
        'MAX_ZOOM': MAX_ZOOM,
        'MIN_ZOOM': MIN_ZOOM,
        'TILES' : [('GROUND FLOOR', 'https://data.dh.gu.se/tiles/saint_sophia_ground_floor/{z}/{x}/{y}.png', {'attribution': '&copy; GRIDH'})],
-       'OVERLAYS': [('GROUND FLOOR', 'https://data.dh.gu.se/tiles/saint_sophia_ground_floor/{z}/{x}/{y}.png', {'attribution': '&copy; GRIDH'}),
-                    ('SECOND FLOOR', 'https://data.dh.gu.se/tiles/saint_sophia_second_floor/{z}/{x}/{y}.png', {'attribution': '&copy; GRIDH'})]
+       'OVERLAYS': [('SECOND FLOOR', 'https://data.dh.gu.se/tiles/saint_sophia_second_floor/{z}/{x}/{y}.png', {'attribution': '&copy; GRIDH'})]
     }
     
     change_form_template = 'apps/inscriptions/panel_change_form.html'
