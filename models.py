@@ -136,7 +136,7 @@ class Panel(abstract.AbstractBaseModel):
 class Inscription(abstract.AbstractBaseModel):
     title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("title"), help_text=_("this field refers to the designation of the inscription"))
     alt_title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("alt_title"), help_text=_("this field needs to be filled with an alternative designation"))
-    url_to_iiif_clip = models.CharField(max_length=1024, blank=True, null=True, verbose_name=_("URL clip of surface IIIF"))
+    url_to_iiif_clip = models.CharField(max_length=1024, blank=True, null=True, verbose_name=_("Position on surface"), help_text=_("URL to clipped IIIF of the inscription"))
     language = models.ForeignKey(Language, on_delete=models.SET_NULL, blank=True, null=True)
     panel = models.ForeignKey(Panel, on_delete=models.CASCADE, blank=True, null=True, related_name="inscriptions", verbose_name=_("Surface"))
     type_of_inscription = models.ForeignKey(InscriptionType, on_delete=models.SET_NULL,  blank=True, null=True)
