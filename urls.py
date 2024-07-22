@@ -17,6 +17,7 @@ router.register(rf'{endpoint}/info/panels', views.PanelInfoViewSet, basename='pa
 router.register(rf'{endpoint}/image', views.IIIFImageViewSet, basename='image')
 router.register(rf'{endpoint}/object-rti', views.ObjectRTIViewSet, basename='object RTI')
 router.register(rf'{endpoint}/object-mesh-3d', views.ObjectRTIViewSet, basename='object Mesh 3D')
+router.register(rf'{endpoint}/annotation', views.AnnotationViewSet, basename='annotations')
 
 urlpatterns = [
     path('', include(router.urls)),

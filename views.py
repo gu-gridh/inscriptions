@@ -7,6 +7,7 @@ from saintsophia.abstract.models import get_fields, DEFAULT_FIELDS
 from django.http import HttpResponse
 import json
 import django_filters
+from rest_framework.response import Response
 
 
 class LanguageViewSet(DynamicDepthViewSet):
@@ -62,13 +63,6 @@ class PanelInfoViewSet(DynamicDepthViewSet):
     serializer_class = serializers.PanelMetadataSerializer
 
     def list(self, request):
-        # Query Parameters 
-        # with_3D = self.request.query_params.get('with_3D')
-        # with_plan = self.request.query_params.get('with_plan')
-        # period = self.request.query_params.get('epoch')
-        # necropolis = self.request.query_params.get('necropolis')
-        # type_of_tomb = self.request.query_params.get('type')
-
         # Filtering places 
         number_of_panels = models.Panel.objects.all().filter(published=True).count()
         panels = models.Panel.objects.all()
@@ -76,20 +70,6 @@ class PanelInfoViewSet(DynamicDepthViewSet):
         panels_shown = panels.filter(published=True).count()
         hidden_panels = number_of_panels - panels_shown
 
-        # plans_count =  panels.filter(id__in=list(
-        #                     models.Image.objects.filter(Q(type_of_image__text__icontains="floor plan") 
-        #                                               | Q (type_of_image__text__icontains="section"))
-        #                                                 .values_list('tomb', flat=True))).count()
-        
-        # photographs_count = places.filter(id__in=list(
-        #                     models.Image.objects.filter(type_of_image__text__icontains="photograph").values_list('tomb', flat=True))
-        #                     ).count()
-        
-
-        # threedhop_count = places.filter(id__in=list(models.Object3DHop.objects.all().values_list('tomb', flat=True))).count()
-        # pointcloud_count = places.filter(id__in=list(models.ObjectPointCloud.objects.all().values_list('tomb', flat=True))).count()
-        # objects_3d = threedhop_count + pointcloud_count
-        
         data = {
             'all_panels': number_of_panels,
             'shown_panels': panels_shown,
@@ -103,6 +83,35 @@ class InscriptionViewSet(DynamicDepthViewSet):
     serializer_class = serializers.InscriptionSerializer
     filterset_fields = get_fields(models.Inscription, exclude=DEFAULT_FIELDS)
     
+class AnnotationViewSet(DynamicDepthViewSet):
+    serializer_class = serializers.AnnotationSerializer
+    queryset = models.Annotation.objects.all().order_by('id')
+    filterset_fields = get_fields(models.Annotation, exclude=DEFAULT_FIELDS+['pixels'])
+    
+    def list(self, request):
+        annotations = models.Annotation.objects.all()
+        serializer = serializers.AnnotationSerializer(annotations, many=True)
+        
+        list_to_return = []
+        for annotation in serializer.data:
+            data = {
+                "type": "Annotation",
+                "body": [
+                    {"value": f"Annotation for inscription {annotation.get('inscription')}"} # 
+                ],
+                "target": {
+                    "selector": {
+                        "type": "FragmentSelector",
+                        "conformsTo": "http://www.w3.org/TR/media-frags/",
+                        "value": f"xywh=pixel:{annotation.get('pixels')}"
+                    }
+                },
+                "id": annotation.get('id')
+            }
+            list_to_return.append(data)
+        
+        return Response(list_to_return)
+
     
 class IIIFImageViewSet(DynamicDepthViewSet):
     """
