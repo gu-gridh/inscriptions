@@ -96,6 +96,8 @@ class AnnotationViewSet(DynamicDepthViewSet):
         
         list_to_return = []
         for annotation in serializer.data:
+            pixels = annotation.get('pixels')
+            stripped_down_pixels = ','.join(map(str, pixels))
             data = {
                 "type": "Annotation",
                 "body": [
@@ -105,7 +107,7 @@ class AnnotationViewSet(DynamicDepthViewSet):
                     "selector": {
                         "type": "FragmentSelector",
                         "conformsTo": "http://www.w3.org/TR/media-frags/",
-                        "value": f"xywh=pixel:{annotation.get('pixels')}"
+                        "value": f"xywh=pixel:{stripped_down_pixels}"
                     }
                 },
                 "id": annotation.get('id')
