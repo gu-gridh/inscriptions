@@ -79,7 +79,8 @@ class PanelMetadataSerializer(DynamicDepthSerializer):
         
         languages = []
         for inscription in inscriptions_on_panel:
-            languages.append(inscription.language.text)
+            if inscription.language is not None:
+                languages.append(inscription.language.text)
             
         return len(set(languages))
     
@@ -88,7 +89,7 @@ class PanelMetadataSerializer(DynamicDepthSerializer):
         
         languages = []
         for inscription in inscriptions_on_panel:
-            if inscription.language.text is not None:
+            if inscription.language is not None:
                 languages.append(inscription.language.text)
         
         return set(languages)
