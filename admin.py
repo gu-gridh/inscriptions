@@ -79,7 +79,7 @@ class PanelAdmin(LeafletGeoAdmin, admin.ModelAdmin):
 @admin.register(Inscription)
 class InscriptionAdmin(admin.ModelAdmin,):
     filter_horizontal = ['tags']
-    readonly_fields = ['panel']
+    # readonly_fields = ['panel']
     list_display = ['title', 'language', 'panel', 'type_of_inscription']
     search_fields = ['title', 'language__text', 'panel__title']
  

@@ -84,14 +84,20 @@ class InscriptionViewSet(DynamicDepthViewSet):
     filterset_fields = get_fields(models.Inscription, exclude=DEFAULT_FIELDS)
     
 class AnnotationViewSet(DynamicDepthViewSet):
-    # serializer_class = serializers.AnnotationSerializer
     queryset = models.Annotation.objects.all().order_by('id')
     filterset_fields = get_fields(models.Annotation, exclude=DEFAULT_FIELDS+['pixels'])
     
     def list(self, request):
         queryset = models.Annotation.objects.all().order_by('id')
         filterset_fields = get_fields(models.Annotation, exclude=DEFAULT_FIELDS+['pixels'])
-        annotations = models.Annotation.objects.all()
+        
+        surface = self.request.query_params.get('surface')
+        
+        if surface:
+            annotations = queryset.filter(inscription__panel__title = surface)
+        else:
+            annotations = queryset
+        
         serializer = serializers.AnnotationSerializer(annotations, many=True)
         
         list_to_return = []
