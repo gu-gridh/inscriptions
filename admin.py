@@ -82,12 +82,14 @@ class InscriptionAdmin(admin.ModelAdmin,):
     # readonly_fields = ['panel']
     list_display = ['title', 'language', 'panel', 'type_of_inscription']
     search_fields = ['title', 'language__text', 'panel__title']
+    autocomplete_fields = ['panel']
  
  
 @admin.register(Annotation)
 class AnnotationAdmin(admin.ModelAdmin,):
     list_display = ['inscription', 'id']
     search_fields = ['inscription', 'id']
+    autocomplete_fields = ['inscription']
     
 
 @admin.register(Image)
