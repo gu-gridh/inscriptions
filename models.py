@@ -149,18 +149,6 @@ class Inscription(abstract.AbstractBaseModel):
 
     class Meta:
         verbose_name = _("Inscription")
-
-
-class Annotation(abstract.AbstractBaseModel):
-    inscription = models.ForeignKey(Inscription, on_delete=models.CASCADE, blank=True, null=True, related_name="annotation")
-    pixels = models.JSONField(default=list, null=True, blank=True, help_text=_("Format: 4 comma-separated float numbers between square brackets, e.g.: [0.0, 1.1, 2.2, 3.3]"))#ArrayField(models.FloatField(), size=4, default=list, help_text=_("Format: 4 comma-separated float numbers, e.g.: 0.0, 1.1, 2.2, 3.3"), blank=True, null=True)
-    
-    def __str__(self) -> str:
-        return f"Annotation of inscription {self.inscription}"
-    
-    class Meta:
-        verbose_name = _("Annotation")
-        
     
         
 class PanelOrInscription(models.IntegerChoices):

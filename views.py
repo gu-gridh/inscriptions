@@ -102,7 +102,6 @@ class AnnotationViewSet(DynamicDepthViewSet):
         
         list_to_return = []
         for annotation in serializer.data:
-            print(annotation)
             pixels = annotation.get('url_to_iiif_clip')
             stripped_down_pixels = pixels.split("/")[8]# ','.join(map(str, pixels))
             data = {
