@@ -22,7 +22,8 @@ class Tag(abstract.AbstractTagModel):
         return str(self)
     
 
-class Language(abstract.AbstractTagModel):
+class Language(abstract.AbstractBaseModel):
+    text = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("Language"))
     text_ukr = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("мова (укр)"))
     
     class Meta:
@@ -55,6 +56,34 @@ class InscriptionType(abstract.AbstractTagModel):
     class Meta:
         verbose_name = _("Inscription Type")
         verbose_name_plural = _("Inscription Types")
+
+    def __str__(self) -> str:
+        return self.text
+    
+    def __repr__(self) -> str:
+        return str(self)
+    
+    
+class Genre(abstract.AbstractTagModel):
+    text_ukr = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("жанр (укр)"))
+    
+    class Meta:
+        verbose_name = _("Genre")
+        verbose_name_plural = _("Genres")
+
+    def __str__(self) -> str:
+        return self.text
+    
+    # def __repr__(self) -> str:
+    #     return str(self)
+    
+    
+class WritingSystem(abstract.AbstractTagModel):
+    text_ukr = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("система письма (укр)"))
+    
+    class Meta:
+        verbose_name = _("Writing System")
+        verbose_name_plural = _("Writing Systems")
 
     def __str__(self) -> str:
         return self.text
@@ -138,11 +167,12 @@ class Inscription(abstract.AbstractBaseModel):
     alt_title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("alt_title"), help_text=_("this field needs to be filled with an alternative designation"))
     url_to_iiif_clip = models.CharField(max_length=1024, blank=True, null=True, verbose_name=_("Position on surface"), help_text=_("URL to clipped IIIF of the inscription"))
     language = models.ForeignKey(Language, on_delete=models.SET_NULL, blank=True, null=True)
+    writing_system = models.ForeignKey(WritingSystem, on_delete=models.SET_NULL, blank=True, null=True)
     panel = models.ForeignKey(Panel, on_delete=models.CASCADE, blank=True, null=True, related_name="inscriptions", verbose_name=_("Surface"))
     type_of_inscription = models.ForeignKey(InscriptionType, on_delete=models.SET_NULL,  blank=True, null=True)
+    genre = models.ManyToManyField(Genre, blank=True, help_text=_("Genre of the inscription"))
     tags = models.ManyToManyField(Tag, blank=True, help_text=_("Tags attached to the inscription"))
     author = models.ForeignKey(Author, on_delete=models.SET_NULL, blank=True, null=True)
-    
     
     def __str__(self) -> str:
         return f"Inscription {self.title}"

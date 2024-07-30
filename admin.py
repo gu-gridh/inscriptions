@@ -20,13 +20,13 @@ MIN_ZOOM = 20
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
-    list_display = ['text']
-    search_fields = ['text']
+    list_display = ['text', 'text_ukr']
+    search_fields = ['text', 'text_ukr']
     
 @admin.register(Language)
 class LanguageAdmin(admin.ModelAdmin):
-    list_display = ['text']
-    search_fields = ['text']
+    list_display = ['text', 'text_ukr']
+    search_fields = ['text', 'text_ukr']
     
     
 @admin.register(ImageType)
@@ -37,14 +37,26 @@ class ImageTypeAdmin(admin.ModelAdmin):
     
 @admin.register(InscriptionType)
 class InscriptionTypeAdmin(admin.ModelAdmin):
-    list_display = ['text']
-    search_fields = ['text']
+    list_display = ['text', 'text_ukr']
+    search_fields = ['text', 'text_ukr']
     
+
+@admin.register(Genre)
+class GenreAdmin(admin.ModelAdmin):
+    list_display = ['text', 'text_ukr']
+    search_fields = ['text', 'text_ukr']
+    
+
+@admin.register(WritingSystem)
+class WritingSystemAdmin(admin.ModelAdmin):
+    list_display = ['text', 'text_ukr']
+    search_fields = ['text', 'text_ukr']
+
 
 @admin.register(Author)
 class AuthorAdmin(admin.ModelAdmin):
     list_display = ['firstname', 'lastname']
-    search_fields = ['firstname', 'lastname']
+    search_fields = ['firstname', 'lastname', 'firstname_ukr', 'lastname_ukr']
     
 
 @admin.register(Documentation)

@@ -9,6 +9,7 @@ endpoint = utils.build_app_endpoint("inscriptions")
 documentation = utils.build_app_api_documentation("inscriptions", endpoint)
 
 router.register(rf'{endpoint}/language', views.LanguageViewSet, basename='languages')
+router.register(rf'{endpoint}/writing-system', views.WritingSystemViewSet, basename='writing systems')
 router.register(rf'{endpoint}/geojson/panel', views.PanelGeoViewSet, basename='panel with geojson coordinates')
 router.register(rf'{endpoint}/panel', views.PanelViewSet, basename='panels information')
 router.register(rf'{endpoint}/panel-metadata', views.PanelMetadataViewSet, basename='panels metadata')
@@ -17,6 +18,7 @@ router.register(rf'{endpoint}/info/panels', views.PanelInfoViewSet, basename='pa
 router.register(rf'{endpoint}/image', views.IIIFImageViewSet, basename='image')
 router.register(rf'{endpoint}/object-rti', views.ObjectRTIViewSet, basename='object RTI')
 router.register(rf'{endpoint}/object-mesh-3d', views.ObjectRTIViewSet, basename='object Mesh 3D')
+router.register(rf'{endpoint}/inscription', views.InscriptionViewSet, basename='inscription')
 router.register(rf'{endpoint}/annotation', views.AnnotationViewSet, basename='annotations')
 
 urlpatterns = [
@@ -24,8 +26,8 @@ urlpatterns = [
 
     # Automatically generated views
     *utils.get_model_urls('inscriptions', endpoint, 
-        exclude=['panel', 'image', 'objectrti', 'objectmesh3d']),
+        exclude=['panel', 'image','inscription',  'objectrti', 'objectmesh3d']),
 
-    *utils.get_model_urls('inscriptions', f'{endpoint}', exclude=['panel', 'image', 'objectrti', 'objectmesh3d']),
+    *utils.get_model_urls('inscriptions', f'{endpoint}', exclude=['panel', 'image', 'inscription', 'objectrti', 'objectmesh3d']),
     *documentation
 ]

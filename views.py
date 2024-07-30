@@ -13,6 +13,13 @@ from rest_framework.response import Response
 class LanguageViewSet(DynamicDepthViewSet):
     queryset = models.Language.objects.all().order_by('text')
     serializer_class = serializers.LanguageSerializer
+    filterset_fields = get_fields(models.Language, exclude=DEFAULT_FIELDS)
+    
+
+class WritingSystemViewSet(DynamicDepthViewSet):
+    queryset = models.WritingSystem.objects.all().order_by('text')
+    serializer_class = serializers.WritingSystemSerializer
+    filterset_fields = get_fields(models.WritingSystem, exclude=DEFAULT_FIELDS)
 
 
 class PanelViewSet(DynamicDepthViewSet):
@@ -79,9 +86,10 @@ class PanelInfoViewSet(DynamicDepthViewSet):
         return HttpResponse(json.dumps(data))
     
 class InscriptionViewSet(DynamicDepthViewSet):
-    queryset = models.Inscription.objects.all().order_by('title')
+    queryset = models.Inscription.objects.all()#.order_by('title')
     serializer_class = serializers.InscriptionSerializer
     filterset_fields = get_fields(models.Inscription, exclude=DEFAULT_FIELDS)
+    
     
 class AnnotationViewSet(DynamicDepthViewSet):
     queryset = models.Inscription.objects.all().order_by('id')

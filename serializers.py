@@ -11,7 +11,13 @@ class LanguageSerializer(DynamicDepthSerializer):
     class Meta:
         model = Language
         fields = get_fields(Language, exclude=DEFAULT_FIELDS) + ['id']
-
+        
+        
+class WritingSystemSerializer(DynamicDepthSerializer):
+    class Meta:
+        model = WritingSystem
+        fields = get_fields(WritingSystem, exclude=DEFAULT_FIELDS) + ['id']
+        
 
 class PanelSerializer(DynamicDepthSerializer):
 
