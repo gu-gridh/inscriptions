@@ -84,30 +84,31 @@ class InscriptionViewSet(DynamicDepthViewSet):
     filterset_fields = get_fields(models.Inscription, exclude=DEFAULT_FIELDS)
     
 class AnnotationViewSet(DynamicDepthViewSet):
-    queryset = models.Annotation.objects.all().order_by('id')
-    filterset_fields = get_fields(models.Annotation, exclude=DEFAULT_FIELDS+['pixels'])
+    queryset = models.Inscription.objects.all().order_by('id')
+    filterset_fields = get_fields(models.Inscription, exclude=DEFAULT_FIELDS+['pixels'])
     
     def list(self, request):
-        queryset = models.Annotation.objects.all().order_by('id')
-        filterset_fields = get_fields(models.Annotation, exclude=DEFAULT_FIELDS+['pixels'])
+        queryset = models.Inscription.objects.all().order_by('id')
+        filterset_fields = get_fields(models.Inscription, exclude=DEFAULT_FIELDS+['pixels'])
         
         surface = self.request.query_params.get('surface')
         
         if surface:
-            annotations = queryset.filter(inscription__panel__title = surface)
+            annotations = queryset.filter(panel__title = surface)
         else:
             annotations = queryset
         
-        serializer = serializers.AnnotationSerializer(annotations, many=True)
+        serializer = serializers.InscriptionSerializer(annotations, many=True)
         
         list_to_return = []
         for annotation in serializer.data:
-            pixels = annotation.get('pixels')
-            stripped_down_pixels = ','.join(map(str, pixels))
+            print(annotation)
+            pixels = annotation.get('url_to_iiif_clip')
+            stripped_down_pixels = pixels.split("/")[8]# ','.join(map(str, pixels))
             data = {
                 "type": "Annotation",
                 "body": [
-                    {"value": f"Annotation for inscription {annotation.get('inscription')}"} # 
+                    {"value": f"Annotation for panel {annotation.get('panel')}"} # 
                 ],
                 "target": {
                     "selector": {
