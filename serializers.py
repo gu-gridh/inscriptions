@@ -22,19 +22,26 @@ class WritingSystemSerializer(DynamicDepthSerializer):
 class PanelSerializer(DynamicDepthSerializer):
 
     list_of_languages = SerializerMethodField()
+    number_of_inscriptions = SerializerMethodField()
 
     class Meta:
         model = Panel
-        fields = get_fields(Panel, exclude=DEFAULT_FIELDS)+ ['id', 'list_of_languages']
+        fields = get_fields(Panel, exclude=DEFAULT_FIELDS)+ ['id', 'list_of_languages', 'number_of_inscriptions']
         
     def get_list_of_languages(self, obj):
         inscriptions_on_panel = obj.inscriptions.all()
         
         languages = []
         for inscription in inscriptions_on_panel:
-            languages.append(inscription.language.text)
+            if inscription.language is not None:
+                languages.append(inscription.language.text)
         
         return set(languages)
+    
+    def get_number_of_inscriptions(self, obj):
+        inscriptions_on_panel = obj.inscriptions.all()
+        
+        return len(inscriptions_on_panel)
         
 class PanelGeoSerializer(GeoFeatureModelSerializer):
     attached_photograph = SerializerMethodField()
