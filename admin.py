@@ -92,8 +92,8 @@ class PanelAdmin(LeafletGeoAdmin, admin.ModelAdmin):
 class InscriptionAdmin(admin.ModelAdmin,):
     filter_horizontal = ['tags']
     # readonly_fields = ['panel']
-    list_display = ['title', 'language', 'panel', 'type_of_inscription']
-    search_fields = ['title', 'language__text', 'panel__title']
+    list_display = ['panel', 'id', 'language', 'title']
+    search_fields = ['id', 'language__text', 'panel__title']
     autocomplete_fields = ['panel']
 
 

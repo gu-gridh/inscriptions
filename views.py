@@ -111,11 +111,14 @@ class AnnotationViewSet(DynamicDepthViewSet):
         list_to_return = []
         for annotation in serializer.data:
             pixels = annotation.get('url_to_iiif_clip')
-            stripped_down_pixels = pixels.split("/")[8]# ','.join(map(str, pixels))
+            if pixels is not None:
+                stripped_down_pixels = pixels.split("/")[8]
+            else:
+                stripped_down_pixels = ""
             data = {
                 "type": "Annotation",
                 "body": [
-                    {"value": f"Annotation for panel {annotation.get('panel')}"} # 
+                    {"value": f"Inscription {annotation.get('panel')}:{annotation.get('id')}"} # 
                 ],
                 "target": {
                     "selector": {

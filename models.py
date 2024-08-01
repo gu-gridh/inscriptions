@@ -163,8 +163,7 @@ class Panel(abstract.AbstractBaseModel):
 
 
 class Inscription(abstract.AbstractBaseModel):
-    title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("title"), help_text=_("this field refers to the designation of the inscription"))
-    alt_title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("alt_title"), help_text=_("this field needs to be filled with an alternative designation"))
+    title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("title"), help_text=_("fill if the inscription is known by an official name"))
     url_to_iiif_clip = models.CharField(max_length=1024, blank=True, null=True, verbose_name=_("Position on surface"), help_text=_("URL to clipped IIIF of the inscription"))
     language = models.ForeignKey(Language, on_delete=models.SET_NULL, blank=True, null=True)
     writing_system = models.ForeignKey(WritingSystem, on_delete=models.SET_NULL, blank=True, null=True)
@@ -175,7 +174,10 @@ class Inscription(abstract.AbstractBaseModel):
     author = models.ForeignKey(Author, on_delete=models.SET_NULL, blank=True, null=True)
     
     def __str__(self) -> str:
-        return f"Inscription {self.title}"
+        if (self.title) is not None:
+            return f"Inscription {self.panel.title}:{self.id} ({self.title})"
+        else:
+            return f"Inscription {self.panel.title}:{self.id}"
 
     class Meta:
         verbose_name = _("Inscription")
