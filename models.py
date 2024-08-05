@@ -270,8 +270,7 @@ class Translation(abstract.AbstractBaseModel):
         if self.language is not None:
             return f"{self.language} translation for {self.inscription}"
         else:
-            return f"Translation for {self.inscription}"
-            
+            return f"Translation for {self.inscription}"    
     
     class Meta:
         verbose_name = _("Translation")

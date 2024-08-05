@@ -138,11 +138,11 @@ class TranscriptionAdmin(admin.ModelAdmin):
 class TranslationAdmin(admin.ModelAdmin):
     autocomplete_fields = ['inscription']
     list_display = ['inscription']
-    search_fields = ['inscription__panel__title', 'text', 'language__text']
+    search_fields = ['inscription__panel__title', 'text', 'language__text', 'language__text_ukr', 'inscription__title']
     
     
 @admin.register(Description)
 class DescriptionAdmin(admin.ModelAdmin):
     autocomplete_fields = ['inscription']
     list_display = ['inscription', 'language']
-    search_fields = ['inscription__panel__title', 'text', 'language__text']
+    search_fields = ['inscription__panel__title', 'text', 'language__text', 'language__text_ukr', 'inscription__title']
