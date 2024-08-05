@@ -267,8 +267,29 @@ class Translation(abstract.AbstractBaseModel):
     language = models.ManyToManyField(Language, blank=True, related_name="language", default=None)
     
     def __str__(self) -> str:
-        return f"Translation for inscription {self.inscription} ({self.language})"
+        if self.language is not None:
+            return f"{self.language} translation for {self.inscription}"
+        else:
+            return f"Translation for {self.inscription}"
+            
     
     class Meta:
         verbose_name = _("Translation")
         verbose_name_plural = _("Translations")
+        
+        
+class Description(abstract.AbstractBaseModel):
+    text = RichTextField(null=True, blank=True, verbose_name=_("Translation text"))
+    inscription = models.ForeignKey(Inscription, null=True, blank=True, on_delete=models.CASCADE, related_name="description")
+    author = models.ManyToManyField(Author, blank=True, verbose_name=_("Author"), default=None)
+    language = models.ForeignKey(Language, blank=True, null=True, default=None, on_delete=models.SET_NULL)
+    
+    def __str__(self) -> str:
+        if self.language is not None:
+            return f"Description for {self.inscription} ({self.language})"
+        else:
+            return f"Description for {self.inscription}"
+    
+    class Meta:
+        verbose_name = _("Description")
+        verbose_name_plural = _("Descriptions")
