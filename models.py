@@ -165,13 +165,14 @@ class Panel(abstract.AbstractBaseModel):
 class Inscription(abstract.AbstractBaseModel):
     title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("title"), help_text=_("fill if the inscription is known by an official name"))
     url_to_iiif_clip = models.CharField(max_length=1024, blank=True, null=True, verbose_name=_("Position on surface"), help_text=_("URL to clipped IIIF of the inscription"))
+    transcription = RichTextField(null=True, blank=True, verbose_name=_("Transcription of the Inscription"))
     language = models.ForeignKey(Language, on_delete=models.SET_NULL, blank=True, null=True)
     writing_system = models.ForeignKey(WritingSystem, on_delete=models.SET_NULL, blank=True, null=True)
     panel = models.ForeignKey(Panel, on_delete=models.CASCADE, blank=True, null=True, related_name="inscriptions", verbose_name=_("Surface"))
     type_of_inscription = models.ForeignKey(InscriptionType, on_delete=models.SET_NULL,  blank=True, null=True)
     genre = models.ManyToManyField(Genre, blank=True, help_text=_("Genre of the inscription"))
     tags = models.ManyToManyField(Tag, blank=True, help_text=_("Tags attached to the inscription"))
-    author = models.ForeignKey(Author, on_delete=models.SET_NULL, blank=True, null=True)
+    author = models.ManyToManyField(Author, blank=True, help_text=_("List of authors for this inscription"))
     
     def __str__(self) -> str:
         if (self.title) is not None:
@@ -189,7 +190,6 @@ class PanelOrInscription(models.IntegerChoices):
     
 
 class Image(abstract.AbstractTIFFImageModel):
-    # title = models.CharField(max_length=1024, null=True, blank=True, verbose_name=_("title"))
     panel_or_inscription = models.IntegerField(choices=PanelOrInscription.choices, verbose_name=_("Surface or inscription"))
     panel = models.ForeignKey(Panel, null=True, blank=True, on_delete=models.CASCADE, related_name="images", verbose_name=_("Surface"))
     inscription = models.ForeignKey(Inscription, null=True, blank=True, on_delete=models.CASCADE, related_name="inscription")
@@ -245,19 +245,6 @@ class ObjectMesh3D(abstract.AbstractBaseModel):
     class Meta:
         verbose_name = _("Object 3D Mesh")
         verbose_name_plural = _("Objects 3D Mesh")
-        
-        
-class Transcription(abstract.AbstractBaseModel):
-    text = RichTextField(null=True, blank=True, verbose_name=_("Text of transcription"))
-    inscription = models.ForeignKey(Inscription, null=True, blank=True, on_delete=models.CASCADE, related_name="transcription")
-    author = models.ManyToManyField(Author, blank=True, verbose_name=_("Author"), default=None)
-    
-    def __str__(self) -> str:
-        return f"Transcription for inscription {self.inscription}"
-    
-    class Meta:
-        verbose_name = _("Transcription")
-        verbose_name_plural = _("Transcriptions")
     
 
 class Translation(abstract.AbstractBaseModel):

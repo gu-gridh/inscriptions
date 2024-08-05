@@ -180,3 +180,15 @@ class ObjectRTIViewSet(DynamicDepthViewSet):
     queryset = models.ObjectMesh3D.objects.all().order_by('id')
     serializer_class = serializers.ObjectMesh3DSerializer
     filterset_fields = get_fields(models.ObjectMesh3D, exclude=DEFAULT_FIELDS)
+    
+   
+class TranslationViewSet(DynamicDepthViewSet):
+    queryset = models.Translation.objects.all().order_by('id')
+    serializer_class = serializers.TranslationSerializer
+    filterset_fields = get_fields(models.Translation, exclude=DEFAULT_FIELDS) 
+
+
+class DescriptionViewSet(DynamicDepthViewSet):
+    queryset = models.Description.objects.all().order_by('id')
+    serializer_class = serializers.DescriptionSerializer 
+    filterset_fields = get_fields(models.Description, exclude=DEFAULT_FIELDS) 

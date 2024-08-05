@@ -127,13 +127,6 @@ class ObjectMesh3DAdmin(admin.ModelAdmin):
     search_fields = ['panel__title', 'url']
     
     
-@admin.register(Transcription)
-class TranscriptionAdmin(admin.ModelAdmin):
-    autocomplete_fields = ['inscription']
-    list_display = ['inscription']
-    search_fields = ['inscription__panel__title']
-    
-    
 @admin.register(Translation)
 class TranslationAdmin(admin.ModelAdmin):
     autocomplete_fields = ['inscription']
