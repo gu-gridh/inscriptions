@@ -278,7 +278,7 @@ class Translation(abstract.AbstractBaseModel):
         
         
 class Description(abstract.AbstractBaseModel):
-    text = RichTextField(null=True, blank=True, verbose_name=_("Translation text"))
+    text = RichTextField(null=True, blank=True, verbose_name=_("Description text"))
     inscription = models.ForeignKey(Inscription, null=True, blank=True, on_delete=models.CASCADE, related_name="description")
     author = models.ManyToManyField(Author, blank=True, verbose_name=_("Author"), default=None)
     language = models.ForeignKey(Language, blank=True, null=True, default=None, on_delete=models.SET_NULL)
