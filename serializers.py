@@ -129,6 +129,13 @@ class InscriptionSerializer(DynamicDepthSerializer):
         model = Inscription
         fields = get_fields(Inscription, exclude=DEFAULT_FIELDS)+ ['id']
 
+
+class InscriptionTagsSerializer(DynamicDepthSerializer):
+
+    class Meta:
+        model = Tag
+        fields = get_fields(Tag, exclude=DEFAULT_FIELDS)+ ['id']
+        
         
 class TIFFImageSerializer(DynamicDepthSerializer):
     

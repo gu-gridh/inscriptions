@@ -85,10 +85,94 @@ class PanelInfoViewSet(DynamicDepthViewSet):
 
         return HttpResponse(json.dumps(data))
     
+    
+# class SurfaceTagsViewSet(DynamicDepthViewSet):
+#     queryset = models.Panel.objects.all().order_by('title')
+#     filterset_fields = get_fields(models.Panel, exclude=DEFAULT_FIELDS+['geometry', 'spatial_position', 'spatial_direction'])
+    
+#     def list(self, request):
+#         queryset = models.Panel.objects.all().order_by('title')
+#         filterset_fields = get_fields(models.Panel, exclude=DEFAULT_FIELDS+['geometry', 'spatial_position', 'spatial_direction'])
+        
+#         all_tags = models.Tag.objects.all()
+        
+#         surface = self.request.query_params.get('title')
+        
+#         if surface:
+#              = queryset.filter(panel__title__contains = surface)
+#         else:
+#             inscriptions = queryset
+        
+#         serializer = serializers.InscriptionSerializer(inscriptions, many=True)
+        
+#         formatted_data = []
+#         list_of_tags = []
+#         for inscription in serializer.data:
+            
+#             tags = inscription.get('tags')
+            
+#             for tag_id in tags:
+                
+#                 selected_tag = all_tags.get(pk=tag_id)
+                
+#                 if selected_tag.text not in list_of_tags:
+#                     data = {
+#                         "tag_eng" : selected_tag.text,
+#                         "tag_ukr" : selected_tag.text_ukr
+#                     }
+                    
+#                     list_of_tags.append(selected_tag.text)
+#                     formatted_data.append(data)
+        
+#         return Response(formatted_data)
+
+    
 class InscriptionViewSet(DynamicDepthViewSet):
     queryset = models.Inscription.objects.all()#.order_by('title')
     serializer_class = serializers.InscriptionSerializer
     filterset_fields = get_fields(models.Inscription, exclude=DEFAULT_FIELDS)
+    
+
+class InscriptionTagsViewSet(DynamicDepthViewSet):
+    queryset = models.Inscription.objects.all().order_by('id')
+    filterset_fields = get_fields(models.Inscription, exclude=DEFAULT_FIELDS+['pixels'])
+    
+    def list(self, request):
+        queryset = models.Inscription.objects.all().order_by('id')
+        filterset_fields = get_fields(models.Inscription, exclude=DEFAULT_FIELDS+['pixels'])
+        
+        all_tags = models.Tag.objects.all()
+        
+        surface = self.request.query_params.get('surface')
+        
+        if surface:
+            inscriptions = queryset.filter(panel__title__contains = surface)
+        else:
+            inscriptions = queryset
+        
+        serializer = serializers.InscriptionSerializer(inscriptions, many=True)
+        
+        formatted_data = []
+        list_of_tags = []
+        for inscription in serializer.data:
+            
+            tags = inscription.get('tags')
+            
+            for tag_id in tags:
+                
+                selected_tag = all_tags.get(pk=tag_id)
+                
+                if selected_tag.text not in list_of_tags:
+                    data = {
+                        "tag_eng" : selected_tag.text,
+                        "tag_ukr" : selected_tag.text_ukr
+                    }
+                    
+                    list_of_tags.append(selected_tag.text)
+                    formatted_data.append(data)
+        
+        return Response(formatted_data)
+        
     
     
 class AnnotationViewSet(DynamicDepthViewSet):

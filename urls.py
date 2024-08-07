@@ -22,6 +22,7 @@ router.register(rf'{endpoint}/inscription', views.InscriptionViewSet, basename='
 router.register(rf'{endpoint}/description', views.InscriptionViewSet, basename='description')
 router.register(rf'{endpoint}/translation', views.InscriptionViewSet, basename='translation')
 router.register(rf'{endpoint}/annotation', views.AnnotationViewSet, basename='annotations')
+router.register(rf'{endpoint}/inscription-tags', views.InscriptionTagsViewSet, basename="tags for inscriptions")
 
 urlpatterns = [
     path('', include(router.urls)),
