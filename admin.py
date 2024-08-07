@@ -74,7 +74,7 @@ class PanelAdmin(LeafletGeoAdmin, admin.ModelAdmin):
     list_display = ['title', 'room', 'data_available']
     search_fields = ['title', 'room']
     filter_horizontal = ['tags']
-    list_filter = [('spatial_position', EmptyFieldListFilter), ('spatial_direction', EmptyFieldListFilter), "data_available"]
+    list_filter = [ ('spatial_position', EmptyFieldListFilter), ('spatial_direction', EmptyFieldListFilter), ("data_available")]
     
     settings_overrides = {
        'DEFAULT_CENTER': (DEFAULT_LATITUDE, DEFAULT_LONGITUDE),
