@@ -179,6 +179,7 @@ class Inscription(abstract.AbstractBaseModel):
             return f"Inscription {self.panel.title}:{self.id} ({self.title})"
         else:
             return f"Inscription {self.panel.title}:{self.id}"
+    
 
     class Meta:
         verbose_name = _("Inscription")

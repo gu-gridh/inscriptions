@@ -65,6 +65,7 @@ class PanelCoordinatesViewSet(GeoViewSet):
                 
         return queryset
     
+    
 class PanelInfoViewSet(DynamicDepthViewSet):
 
     serializer_class = serializers.PanelMetadataSerializer
@@ -84,6 +85,21 @@ class PanelInfoViewSet(DynamicDepthViewSet):
         }
 
         return HttpResponse(json.dumps(data))
+    
+    
+class PanelStringViewSet(DynamicDepthViewSet):
+    serializer_class = serializers.PanelSerializer
+    # queryset = models.Panel.objects.all().order_by('id')
+    filterset_fields = get_fields(models.Panel, exclude=DEFAULT_FIELDS + ['geometry', 'spatial_position', 'spatial_direction', 'published'])
+    
+    def get_queryset(self):
+        queryset = models.Panel.objects.all().order_by('id')
+        str = self.request.query_params.get('str')
+        if str: 
+            queryset = queryset.filter(title__startswith=str)
+            
+        return queryset
+        
     
     
 # class SurfaceTagsViewSet(DynamicDepthViewSet):
@@ -172,7 +188,28 @@ class InscriptionTagsViewSet(DynamicDepthViewSet):
                     formatted_data.append(data)
         
         return Response(formatted_data)
+    
+def inscription_contains_str(string, inscription):
+    denomination = f"{inscription.panel.title}:{inscription.id}"
+    print(denomination, denomination.startswith(string))
+    
+    return denomination.startswith(string)
+
+
+class InscriptionStringViewSet(DynamicDepthViewSet):
+    serializer_class = serializers.InscriptionSerializer
+    filterset_fields = get_fields(models.Inscription, exclude=DEFAULT_FIELDS + ['pixels'])
+    
+    def get_queryset(self):
+        queryset = models.Inscription.objects.all()
         
+        str = self.request.query_params.get('str')
+        
+        if str:
+            ids_containing_str = [inscription.id for inscription in queryset if inscription_contains_str(str, inscription)] 
+            queryset = queryset.filter(Q(id__in=ids_containing_str) | Q(title__startswith=str))
+            
+        return queryset 
     
     
 class AnnotationViewSet(DynamicDepthViewSet):
