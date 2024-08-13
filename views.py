@@ -22,6 +22,60 @@ class WritingSystemViewSet(DynamicDepthViewSet):
     filterset_fields = get_fields(models.WritingSystem, exclude=DEFAULT_FIELDS)
 
 
+class ContributorsViewSet(DynamicDepthViewSet):
+    queryset = models.Inscription.objects.all()
+    filterset_fields = get_fields(models.Inscription, exclude=DEFAULT_FIELDS)
+    
+    def list(self, request):
+        queryset = models.Inscription.objects.all().order_by('id')
+        
+        inscription_id = self.request.query_params.get('id')
+        if inscription_id:
+            inscriptions = queryset.filter(id=inscription_id)
+            descriptions = models.Description.objects.all().filter(inscription__id=inscription_id)
+            translations = models.Translation.objects.all().filter(inscription__id=inscription_id)
+        else:
+            inscriptions = queryset
+            descriptions = models.Description.objects.all()
+            translations = models.Translation.objects.all()
+            
+        inscription_serializer = serializers.InscriptionSerializer(inscriptions, many=True)
+        description_serializer = serializers.DescriptionSerializer(descriptions, many=True)
+        translation_serializer = serializers.TranslationSerializer(translations, many=True)
+        
+        formatted_data = []
+        list_of_authors = []
+        
+        for inscription in inscription_serializer.data:    
+            inscriptions_authors = inscription.get('author')
+            for author_id in inscriptions_authors:
+                list_of_authors.append(models.Author.objects.get(id = author_id))
+                
+        for description in description_serializer.data:
+            description_authors = description.get('author')
+            for author_id in description_authors:
+                list_of_authors.append(models.Author.objects.get(id = author_id))
+                
+        for translation in translation_serializer.data:
+            translation_authors = translation.get('author')
+            for author_id in translation_authors:
+                list_of_authors.append(models.Author.objects.get(id = author_id))
+            
+        list_of_authors = set(list_of_authors)
+        authors_names = [f"{author.lastname} {author.firstname}" for author in list_of_authors]
+        authors_names.sort()
+        authors_ids = [author.id for author in list_of_authors]
+        
+        formatted_data = [
+            {
+                "authors_ordered": authors_names,
+                "author_id": authors_ids
+            }
+        ]
+        
+        return Response(formatted_data)
+
+
 class PanelViewSet(DynamicDepthViewSet):
     # this view is redundant and should be erased in a second time, unless specific fields need to be potrayed in here
     queryset = models.Panel.objects.all().order_by('title')
@@ -191,7 +245,7 @@ class InscriptionTagsViewSet(DynamicDepthViewSet):
     
 def inscription_contains_str(string, inscription):
     denomination = f"{inscription.panel.title}:{inscription.id}"
-    print(denomination, denomination.startswith(string))
+    # print(denomination, denomination.startswith(string))
     
     return denomination.startswith(string)
 
