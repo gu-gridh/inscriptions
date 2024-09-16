@@ -115,7 +115,7 @@ class Documentation(abstract.AbstractBaseModel):
         verbose_name = _("Documentation")
     
 
-class Panel(abstract.AbstractBaseModel):
+class Panel(abstract.AbstractBaseModel):   
     title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("title"), help_text=_("this field refers to the surface designation"))
     room = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("room"), help_text=_("this field refers to the room in which the surface stands"))
     geometry = models.GeometryField(verbose_name=_("geometry"), blank=True, null=True)
@@ -165,9 +165,15 @@ class Panel(abstract.AbstractBaseModel):
 class Inscription(abstract.AbstractBaseModel):
     url_to_iiif_clip = models.CharField(max_length=1024, blank=True, null=True, verbose_name=_("Position on surface"), help_text=_("URL to clipped IIIF of the inscription (PASTE HERE LINK COPIED IN CLIPBOARD)"))
     title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("title"), help_text=_("fill if the inscription is known by an official name"))
+    
+    elevation = models.FloatField(null=True, blank=True, help_text=_("Elevation of inscription from the floor, in cm"))
+    height = models.IntegerField(null=True, blank=True, help_text=_("Height of inscription, in mm"))
+    width = models.IntegerField(null=True, blank=True, help_text=_("Width of inscription, in mm"))
+    
     transcription = RichTextField(null=True, blank=True, verbose_name=_("Transcription of the Inscription"))
     language = models.ForeignKey(Language, on_delete=models.SET_NULL, blank=True, null=True)
     writing_system = models.ForeignKey(WritingSystem, on_delete=models.SET_NULL, blank=True, null=True)
+    
     panel = models.ForeignKey(Panel, on_delete=models.CASCADE, blank=True, null=True, related_name="inscriptions", verbose_name=_("Surface"))
     type_of_inscription = models.ForeignKey(InscriptionType, on_delete=models.SET_NULL,  blank=True, null=True)
     genre = models.ManyToManyField(Genre, blank=True, help_text=_("Genre of the inscription"))
