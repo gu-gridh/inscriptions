@@ -174,6 +174,10 @@ class Inscription(abstract.AbstractBaseModel):
     language = models.ForeignKey(Language, on_delete=models.SET_NULL, blank=True, null=True)
     writing_system = models.ForeignKey(WritingSystem, on_delete=models.SET_NULL, blank=True, null=True)
     
+    number_of_letters = models.IntegerField(null=True, blank=True, help_text=_("If inscriptions is a writing, enter how many letters compose it"))
+    number_of_lines = models.IntegerField(null=True, blank=True, help_text=_("If inscriptions is a writing, enter how many lines there are"))
+    is_aligned = models.BooleanField(null=True, blank=True, help_text=_("If inscription contains multiple lines, are they left- or right-aligned?"))
+    
     panel = models.ForeignKey(Panel, on_delete=models.CASCADE, blank=True, null=True, related_name="inscriptions", verbose_name=_("Surface"))
     type_of_inscription = models.ForeignKey(InscriptionType, on_delete=models.SET_NULL,  blank=True, null=True)
     genre = models.ManyToManyField(Genre, blank=True, help_text=_("Genre of the inscription"))
