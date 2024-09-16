@@ -166,17 +166,19 @@ class Inscription(abstract.AbstractBaseModel):
     url_to_iiif_clip = models.CharField(max_length=1024, blank=True, null=True, verbose_name=_("Position on surface"), help_text=_("URL to clipped IIIF of the inscription (PASTE HERE LINK COPIED IN CLIPBOARD)"))
     title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("title"), help_text=_("fill if the inscription is known by an official name"))
     
-    elevation = models.FloatField(null=True, blank=True, help_text=_("Elevation of inscription from the floor, in cm"))
+    elevation = models.IntegerField(null=True, blank=True, help_text=_("Elevation of inscription from the floor, in cm"))
     height = models.IntegerField(null=True, blank=True, help_text=_("Height of inscription, in mm"))
     width = models.IntegerField(null=True, blank=True, help_text=_("Width of inscription, in mm"))
     
-    transcription = RichTextField(null=True, blank=True, verbose_name=_("Transcription of the Inscription"))
+    transcription = RichTextField(null=True, blank=True, verbose_name=_("Transcription of the graffiti"))
+    romanisation = RichTextField(null=True, blank=True, verbose_name=_("Romanisation of the graffiti"))
+    interpretative_edition = RichTextField(null=True, blank=True, verbose_name=_("Interpretative edition of the graffiti"))
     language = models.ForeignKey(Language, on_delete=models.SET_NULL, blank=True, null=True)
     writing_system = models.ForeignKey(WritingSystem, on_delete=models.SET_NULL, blank=True, null=True)
     
-    number_of_letters = models.IntegerField(null=True, blank=True, help_text=_("If inscriptions is a writing, enter how many letters compose it"))
-    number_of_lines = models.IntegerField(null=True, blank=True, help_text=_("If inscriptions is a writing, enter how many lines there are"))
-    is_aligned = models.BooleanField(null=True, blank=True, help_text=_("If inscription contains multiple lines, are they left- or right-aligned?"))
+    # number_of_letters = models.IntegerField(null=True, blank=True, help_text=_("If inscriptions is a writing, enter how many letters compose it"))
+    # number_of_lines = models.IntegerField(null=True, blank=True, help_text=_("If inscriptions is a writing, enter how many lines there are"))
+    # is_aligned = models.BooleanField(null=True, blank=True, help_text=_("If inscription contains multiple lines, are they left- or right-aligned?"))
     
     panel = models.ForeignKey(Panel, on_delete=models.CASCADE, blank=True, null=True, related_name="inscriptions", verbose_name=_("Surface"))
     type_of_inscription = models.ForeignKey(InscriptionType, on_delete=models.SET_NULL,  blank=True, null=True)
