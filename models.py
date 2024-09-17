@@ -64,6 +64,48 @@ class InscriptionType(abstract.AbstractTagModel):
         return str(self)
     
     
+class ExtraAlphabeticalSign(abstract.AbstractTagModel):
+    text_ukr = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("позаалфавітний знак (укр)"))
+    
+    class Meta:
+        verbose_name = _("Extra-alphabetical sign")
+        verbose_name_plural = _("Extra-alphabetical signs")
+
+    def __str__(self) -> str:
+        return self.text
+    
+    def __repr__(self) -> str:
+        return str(self)
+    
+
+class GraffitiCondition(abstract.AbstractTagModel):
+    text_ukr = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("стан графіті (укр)"))
+    
+    class Meta:
+        verbose_name = _("Graffiti condition")
+        verbose_name_plural = _("Graffiti conditions")
+
+    def __str__(self) -> str:
+        return self.text
+    
+    def __repr__(self) -> str:
+        return str(self)
+    
+    
+class GraffitiAlignment(abstract.AbstractTagModel):
+    text_ukr = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("вирівнювання графіті (укр)"))
+    
+    class Meta:
+        verbose_name = _("Graffiti alignment")
+        verbose_name_plural = _("Graffiti alignments")
+
+    def __str__(self) -> str:
+        return self.text
+    
+    def __repr__(self) -> str:
+        return str(self)
+    
+    
 class Genre(abstract.AbstractTagModel):
     text_ukr = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("жанр (укр)"))
     
@@ -76,6 +118,17 @@ class Genre(abstract.AbstractTagModel):
     
     # def __repr__(self) -> str:
     #     return str(self)
+
+
+class DatingCriterium(abstract.AbstractTagModel):
+    text_ukr = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("критерій датування (укр)"))
+    
+    class Meta:
+        verbose_name = _("Dating criterium")
+        verbose_name_plural = _("Dating criteria")
+
+    def __str__(self) -> str:
+        return self.text
     
     
 class WritingSystem(abstract.AbstractTagModel):
@@ -102,6 +155,22 @@ class Author(abstract.AbstractBaseModel):
     def __str__(self) -> str:
         return f"{self.firstname} {self.lastname}"
 
+
+class BibliographyItem(abstract.AbstractBaseModel):
+    title = models.CharField(max_length=1024, null=True, blank=True, help_text=_("Title of the publication"))
+    authors = models.CharField(max_length=1024, null=True, blank=True, help_text=_("List of author in format F.N.LastName, F.N.LastName (use 'et al.' for more than two authors)"))
+    year = models.IntegerField(null=True, blank=True, help_text=_("Year of the publication"))
+    #title_ukr = models.CharField(max_length=1024, null=True, blank=True, help_text=_("Назва видання"))
+    body_of_publication = models.CharField(max_length=1024, null=True, blank=True, help_text=_("Full bibliographic details, e.g. 'Journal of Advanced Studies, vol. 3, n. 3, pp. 33-333'"))
+    
+    
+    class Meta:
+        verbose_name = _("Bibliography item")
+        verbose_name_plural = _("Bibliography items")
+    
+    def __str__(self) -> str:
+        return f"{self.authors} ({self.year})"
+        
 
 class Documentation(abstract.AbstractBaseModel):
     short_title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("short title"), help_text=_("documentation identifier"))
@@ -164,15 +233,15 @@ class Panel(abstract.AbstractBaseModel):
 
 class Inscription(abstract.AbstractBaseModel):
     url_to_iiif_clip = models.CharField(max_length=1024, blank=True, null=True, verbose_name=_("Position on surface"), help_text=_("URL to clipped IIIF of the inscription (PASTE HERE LINK COPIED IN CLIPBOARD)"))
-    title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("title"), help_text=_("fill if the inscription is known by an official name"))
+    title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("Title"), help_text=_("fill if the inscription is known by an official name"))
     
     elevation = models.IntegerField(null=True, blank=True, help_text=_("Elevation of inscription from the floor, in cm"))
     height = models.IntegerField(null=True, blank=True, help_text=_("Height of inscription, in mm"))
     width = models.IntegerField(null=True, blank=True, help_text=_("Width of inscription, in mm"))
     
-    transcription = RichTextField(null=True, blank=True, verbose_name=_("Transcription of the graffiti"))
-    romanisation = RichTextField(null=True, blank=True, verbose_name=_("Romanisation of the graffiti"))
-    interpretative_edition = RichTextField(null=True, blank=True, verbose_name=_("Interpretative edition of the graffiti"))
+    transcription = RichTextField(null=True, blank=True, help_text=_("Transcription of the graffiti"))
+    romanisation = RichTextField(null=True, blank=True, help_text=_("Romanisation of the graffiti"))
+    interpretative_edition = RichTextField(null=True, blank=True, help_text=_("Interpretation of the graffiti"))
     language = models.ForeignKey(Language, on_delete=models.SET_NULL, blank=True, null=True)
     writing_system = models.ForeignKey(WritingSystem, on_delete=models.SET_NULL, blank=True, null=True)
     

@@ -40,12 +40,36 @@ class InscriptionTypeAdmin(admin.ModelAdmin):
     list_display = ['text', 'text_ukr']
     search_fields = ['text', 'text_ukr']
     
+    
+@admin.register(ExtraAlphabeticalSign)
+class ExtraAlphabeticalSignAdmin(admin.ModelAdmin):
+    list_display = ['text', 'text_ukr']
+    search_fields = ['text', 'text_ukr']
+    
+
+@admin.register(GraffitiCondition)
+class GraffitiConditionAdmin(admin.ModelAdmin):
+    list_display = ['text', 'text_ukr']
+    search_fields = ['text', 'text_ukr']
+    
+
+@admin.register(GraffitiAlignment)
+class GraffitiAlignmentAdmin(admin.ModelAdmin):
+    list_display = ['text', 'text_ukr']
+    search_fields = ['text', 'text_ukr']    
+
 
 @admin.register(Genre)
 class GenreAdmin(admin.ModelAdmin):
     list_display = ['text', 'text_ukr']
     search_fields = ['text', 'text_ukr']
-    
+
+
+@admin.register(DatingCriterium)
+class DatingCriteriumAdmin(admin.ModelAdmin):
+    list_display = ['text', 'text_ukr']
+    search_fields = ['text', 'text_ukr']    
+
 
 @admin.register(WritingSystem)
 class WritingSystemAdmin(admin.ModelAdmin):
@@ -58,6 +82,12 @@ class AuthorAdmin(admin.ModelAdmin):
     list_display = ['firstname', 'lastname']
     search_fields = ['firstname', 'lastname', 'firstname_ukr', 'lastname_ukr']
     
+
+@admin.register(BibliographyItem)
+class BibliographyItemAdmin(admin.ModelAdmin):
+    list_display = ['title', 'authors', 'year']
+    search_fields = ['title', 'authors', 'year']    
+
 
 @admin.register(Documentation)
 class DocumentationAdmin(admin.ModelAdmin):
