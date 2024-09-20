@@ -285,11 +285,11 @@ class AnnotationViewSet(DynamicDepthViewSet):
         
         list_to_return = []
         for annotation in serializer.data:
-            pixels = annotation.get('url_to_iiif_clip')
-            if pixels is not None:
-                stripped_down_pixels = pixels.split("/")[8]
+            pct_position = annotation.get('position_on_surface')
+            if pct_position is not None:
+                pct_to_percent_string = pct_position.replace("pct", "percent")
             else:
-                stripped_down_pixels = ""
+                pct_to_percent_string = ""
             data = {
                 "type": "Annotation",
                 "body": [
@@ -299,7 +299,7 @@ class AnnotationViewSet(DynamicDepthViewSet):
                     "selector": {
                         "type": "FragmentSelector",
                         "conformsTo": "http://www.w3.org/TR/media-frags/",
-                        "value": f"xywh=pixel:{stripped_down_pixels}"
+                        "value": f"xywh={pct_to_percent_string}"
                     }
                 },
                 "id": annotation.get('id')
