@@ -161,7 +161,7 @@ class ObjectMesh3DAdmin(admin.ModelAdmin):
 class TranslationAdmin(admin.ModelAdmin):
     filter_horizontal = ['author']
     autocomplete_fields = ['inscription']
-    list_display = ['inscription', 'translation_language']
+    list_display = ['translation_language']
     search_fields = ['inscription__panel__title', 'text', 'language__text', 'language__text_ukr', 'inscription__title']
     
     
@@ -169,5 +169,5 @@ class TranslationAdmin(admin.ModelAdmin):
 class DescriptionAdmin(admin.ModelAdmin):
     filter_horizontal = ['author']
     autocomplete_fields = ['inscription']
-    list_display = ['inscription', 'language']
+    list_display = ['language']
     search_fields = ['inscription__panel__title', 'text', 'language__text', 'language__text_ukr', 'inscription__title']
