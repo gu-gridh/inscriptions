@@ -124,10 +124,21 @@ class PanelCoordinatesSerializer(GeoFeatureModelSerializer):
         
         
 class InscriptionSerializer(DynamicDepthSerializer):
+    
+    inscription_iiif_url = SerializerMethodField()
 
     class Meta:
         model = Inscription
-        fields = get_fields(Inscription, exclude=DEFAULT_FIELDS)+ ['id']
+        fields = get_fields(Inscription, exclude=DEFAULT_FIELDS)+ ['id', 'inscription_iiif_url']
+        
+    def get_inscription_iiif_url(self, obj):
+        images = obj.panel.images.values()
+        
+        url = ""
+        if len(images) > 0:
+            url = f"https://img.dh.gu.se/saintsophia/static/{images[0]['iiif_file']}/{obj.position_on_surface}/"
+        
+        return url
 
 
 class InscriptionTagsSerializer(DynamicDepthSerializer):
