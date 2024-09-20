@@ -239,20 +239,17 @@ class Inscription(abstract.AbstractBaseModel):
     title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("Title"), help_text=_("fill if the inscription is known by an official name"))
     panel = models.ForeignKey(Panel, on_delete=models.CASCADE, blank=True, null=True, related_name="inscriptions", verbose_name=_("Surface"))
     
-    # location on surface
-    elevation = models.IntegerField(null=True, blank=True, help_text=_("Elevation of inscription from the floor, in cm"))
-    height = models.IntegerField(null=True, blank=True, help_text=_("Height of inscription, in mm"))
-    width = models.IntegerField(null=True, blank=True, help_text=_("Width of inscription, in mm"))
-    
     # graffiti metadata
-    transcription = RichTextField(null=True, blank=True, verbose_name=_("Textual graffiti"), help_text=_("Transcription of the graffiti"))
-    romanisation = RichTextField(null=True, blank=True, help_text=_("Romanisation of the graffiti"))
-    interpretative_edition = RichTextField(null=True, blank=True, help_text=_("Interpretation of the graffiti"))
     type_of_inscription = models.ForeignKey(InscriptionType, on_delete=models.SET_NULL,  blank=True, null=True)
     genre = models.ManyToManyField(Genre, blank=True, help_text=_("Genre of the inscription"))
     tags = models.ManyToManyField(Tag, blank=True, verbose_name=_("Descriptions"), help_text=_("Descriptions attached to the inscrigraffitiption"))
     language = models.ForeignKey(Language, on_delete=models.SET_NULL, blank=True, null=True)
     writing_system = models.ForeignKey(WritingSystem, on_delete=models.SET_NULL, blank=True, null=True)
+    
+    # graffiti data
+    transcription = RichTextField(null=True, blank=True, verbose_name=_("Textual graffiti"), help_text=_("Transcription of the graffiti"))
+    interpretative_edition = RichTextField(null=True, blank=True, help_text=_("Interpretation of the graffiti"))
+    romanisation = RichTextField(null=True, blank=True, help_text=_("Romanisation of the graffiti"))
     translations = models.ManyToManyField("Translation", blank=True)
     comments = models.ManyToManyField("Description", blank=True, verbose_name=_("Comments"))
     
@@ -261,9 +258,15 @@ class Inscription(abstract.AbstractBaseModel):
     alignment = models.ManyToManyField(GraffitiAlignment, blank=True, verbose_name=_("Graffiti alignment"), help_text=_("Is the graffiti aligned in some way?"))
     extra_alphabetical_sign = models.ManyToManyField(ExtraAlphabeticalSign, blank=True, verbose_name=_("Extra-alphabetical signs"))
     
+    # location on surface
+    elevation = models.IntegerField(null=True, blank=True, help_text=_("Elevation of inscription from the floor, in mm"))
+    height = models.IntegerField(null=True, blank=True, help_text=_("Height of inscription, in mm"))
+    width = models.IntegerField(null=True, blank=True, help_text=_("Width of inscription, in mm"))
+    
+    # bibliography and contributions
     bibliography = models.ManyToManyField(BibliographyItem, blank=True, help_text=_("Add bibliography items"))
-        
     author = models.ManyToManyField(Author, blank=True, help_text=_("List of authors for this inscription"))
+    
     
     def __str__(self) -> str:
         if (self.title) is not None:
