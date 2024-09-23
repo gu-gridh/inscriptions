@@ -241,8 +241,8 @@ class Inscription(abstract.AbstractBaseModel):
     
     # graffiti metadata
     type_of_inscription = models.ForeignKey(InscriptionType, on_delete=models.SET_NULL,  blank=True, null=True)
-    genre = models.ManyToManyField(Genre, blank=True, help_text=_("Genre of the inscription"))
-    tags = models.ManyToManyField(Tag, blank=True, verbose_name=_("Descriptions"), help_text=_("Descriptions attached to the inscrigraffitiption"))
+    genre = models.ManyToManyField(Genre, blank=True, help_text=_("Genre of the inscription"), verbose_name="Textual genre")
+    tags = models.ManyToManyField(Tag, blank=True, verbose_name=_("Pictorial descriptions"), help_text=_("Descriptions attached to the graffiti"))
     language = models.ForeignKey(Language, on_delete=models.SET_NULL, blank=True, null=True)
     writing_system = models.ForeignKey(WritingSystem, on_delete=models.SET_NULL, blank=True, null=True)
     
