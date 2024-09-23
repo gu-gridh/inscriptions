@@ -132,7 +132,7 @@ class InscriptionSerializer(DynamicDepthSerializer):
         fields = get_fields(Inscription, exclude=DEFAULT_FIELDS)+ ['id', 'inscription_iiif_url']
         
     def get_inscription_iiif_url(self, obj):
-        images = obj.panel.images.values()
+        images = obj.panel.images.filter(type_of_image=1).values() # 1 is orthophotos
         
         url = ""
         if len(images) > 0:
