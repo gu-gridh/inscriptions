@@ -10,7 +10,7 @@ from django.contrib.postgres.fields import ArrayField
 
 class Tag(abstract.AbstractTagModel):
     text_ukr = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("текст (укр)"))
-    # URI_field = models.
+    uniform_resource_identifier = models.URLField(blank=True, null=True)
     
     class Meta:
         verbose_name = _("Tag")
@@ -26,6 +26,7 @@ class Tag(abstract.AbstractTagModel):
 class Language(abstract.AbstractBaseModel):
     text = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("Language"))
     text_ukr = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("мова (укр)"))
+    uniform_resource_identifier = models.URLField(blank=True, null=True)
     
     class Meta:
         verbose_name = _("Language")
@@ -39,6 +40,7 @@ class Language(abstract.AbstractBaseModel):
     
     
 class ImageType(abstract.AbstractTagModel):
+    uniform_resource_identifier = models.URLField(blank=True, null=True)
     
     class Meta:
         verbose_name = _("Image Type")
@@ -53,6 +55,7 @@ class ImageType(abstract.AbstractTagModel):
     
 class InscriptionType(abstract.AbstractTagModel):
     text_ukr = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("Тип напису (укр)"))
+    uniform_resource_identifier = models.URLField(blank=True, null=True)
     
     class Meta:
         verbose_name = _("Inscription Type")
@@ -67,6 +70,7 @@ class InscriptionType(abstract.AbstractTagModel):
     
 class ExtraAlphabeticalSign(abstract.AbstractTagModel):
     text_ukr = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("позаалфавітний знак (укр)"))
+    uniform_resource_identifier = models.URLField(blank=True, null=True)
     
     class Meta:
         verbose_name = _("Extra-alphabetical sign")
@@ -81,6 +85,7 @@ class ExtraAlphabeticalSign(abstract.AbstractTagModel):
 
 class GraffitiCondition(abstract.AbstractTagModel):
     text_ukr = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("стан графіті (укр)"))
+    uniform_resource_identifier = models.URLField(blank=True, null=True)
     
     class Meta:
         verbose_name = _("Graffiti condition")
@@ -95,6 +100,7 @@ class GraffitiCondition(abstract.AbstractTagModel):
     
 class GraffitiAlignment(abstract.AbstractTagModel):
     text_ukr = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("вирівнювання графіті (укр)"))
+    uniform_resource_identifier = models.URLField(blank=True, null=True)
     
     class Meta:
         verbose_name = _("Graffiti alignment")
@@ -109,6 +115,7 @@ class GraffitiAlignment(abstract.AbstractTagModel):
     
 class Genre(abstract.AbstractTagModel):
     text_ukr = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("жанр (укр)"))
+    uniform_resource_identifier = models.URLField(blank=True, null=True)
     
     class Meta:
         verbose_name = _("Genre")
@@ -123,6 +130,7 @@ class Genre(abstract.AbstractTagModel):
 
 class DatingCriterium(abstract.AbstractTagModel):
     text_ukr = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("критерій датування (укр)"))
+    uniform_resource_identifier = models.URLField(blank=True, null=True)
     
     class Meta:
         verbose_name = _("Dating criterium")
@@ -134,6 +142,7 @@ class DatingCriterium(abstract.AbstractTagModel):
     
 class WritingSystem(abstract.AbstractTagModel):
     text_ukr = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("система письма (укр)"))
+    uniform_resource_identifier = models.URLField(blank=True, null=True)
     
     class Meta:
         verbose_name = _("Writing System")
@@ -160,7 +169,7 @@ class Author(abstract.AbstractBaseModel):
 class HistoricalPerson(abstract.AbstractBaseModel):
     firstname = models.CharField(max_length=256, blank=True, null=True, verbose_name=_("First name"))
     lastname = models.CharField(max_length=256, blank=True, null=True, verbose_name=_("Last name"))
-    uri = models.CharField(max_length=1024, blank=True, null=True, verbose_name=_("Uniform Resource Identifier"))
+    uniform_resource_identifier = models.URLField(blank=True, null=True)
     
     def __str__(self) -> str:
         return f"{self.firstname} {self.lastname}"
