@@ -82,6 +82,12 @@ class AuthorAdmin(admin.ModelAdmin):
     list_display = ['firstname', 'lastname']
     search_fields = ['firstname', 'lastname', 'firstname_ukr', 'lastname_ukr']
     
+    
+@admin.register(HistoricalPerson)
+class AuthorHistoricalPerson(admin.ModelAdmin):
+    list_display = ['firstname', 'lastname']
+    search_fields = ['firstname', 'lastname']
+    
 
 @admin.register(BibliographyItem)
 class BibliographyItemAdmin(admin.ModelAdmin):
@@ -120,7 +126,7 @@ class PanelAdmin(LeafletGeoAdmin, admin.ModelAdmin):
 
 @admin.register(Inscription)
 class InscriptionAdmin(admin.ModelAdmin,):
-    filter_horizontal = ['tags', 'genre', 'author', 'condition', 'alignment', 'extra_alphabetical_sign', 'bibliography', 'translations', 'comments']
+    filter_horizontal = ['tags', 'genre', 'author', 'condition', 'alignment', 'extra_alphabetical_sign', 'bibliography', 'mentioned_person']
     # readonly_fields = ['panel']
     list_display = ['panel', 'id', 'language', 'title']
     search_fields = ['id', 'language__text', 'panel__title']
@@ -157,17 +163,17 @@ class ObjectMesh3DAdmin(admin.ModelAdmin):
     search_fields = ['panel__title', 'url']
     
     
-@admin.register(Translation)
-class TranslationAdmin(admin.ModelAdmin):
-    filter_horizontal = ['author']
-    autocomplete_fields = ['inscription']
-    list_display = ['translation_language']
-    search_fields = ['inscription__panel__title', 'text', 'language__text', 'language__text_ukr', 'inscription__title']
+# @admin.register(Translation)
+# class TranslationAdmin(admin.ModelAdmin):
+#     filter_horizontal = ['author']
+#     # autocomplete_fields = ['inscription']
+#     list_display = ['translation_language']
+#     search_fields = ['inscription__panel__title', 'text', 'language__text', 'language__text_ukr', 'inscription__title']
     
     
-@admin.register(Description)
-class DescriptionAdmin(admin.ModelAdmin):
-    filter_horizontal = ['author']
-    autocomplete_fields = ['inscription']
-    list_display = ['language']
-    search_fields = ['inscription__panel__title', 'text', 'language__text', 'language__text_ukr', 'inscription__title']
+# @admin.register(Description)
+# class DescriptionAdmin(admin.ModelAdmin):
+#     filter_horizontal = ['author']
+#     # autocomplete_fields = ['inscription']
+#     list_display = ['language']
+#     search_fields = ['inscription__panel__title', 'text', 'language__text', 'language__text_ukr', 'inscription__title']

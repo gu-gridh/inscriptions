@@ -157,6 +157,15 @@ class Author(abstract.AbstractBaseModel):
         return f"{self.firstname} {self.lastname}"
 
 
+class HistoricalPerson(abstract.AbstractBaseModel):
+    firstname = models.CharField(max_length=256, blank=True, null=True, verbose_name=_("First name"))
+    lastname = models.CharField(max_length=256, blank=True, null=True, verbose_name=_("Last name"))
+    uri = models.CharField(max_length=1024, blank=True, null=True, verbose_name=_("Uniform Resource Identifier"))
+    
+    def __str__(self) -> str:
+        return f"{self.firstname} {self.lastname}"
+    
+
 class BibliographyItem(abstract.AbstractBaseModel):
     title = models.CharField(max_length=1024, null=True, blank=True, help_text=_("Title of the publication"))
     authors = models.CharField(max_length=1024, null=True, blank=True, help_text=_("List of author in format F.N.LastName, F.N.LastName (use 'et al.' for more than two authors)"))
@@ -234,7 +243,6 @@ class Panel(abstract.AbstractBaseModel):
 
 class Inscription(abstract.AbstractBaseModel):
     # metadata
-    # url_to_iiif_clip = models.CharField(max_length=1024, blank=True, null=True, verbose_name=_("Position on surface"), help_text=_("URL to clipped IIIF of the inscription (PASTE HERE LINK COPIED IN CLIPBOARD)"))
     position_on_surface = models.CharField(max_length=128, blank=True, null=True, verbose_name=_("Position on surface"), help_text=_("Position on the surface (PASTE HERE LINK COPIED IN CLIPBOARD)"))
     title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("Title"), help_text=_("fill if the inscription is known by an official name"))
     panel = models.ForeignKey(Panel, on_delete=models.CASCADE, blank=True, null=True, related_name="inscriptions", verbose_name=_("Surface"))
@@ -243,25 +251,28 @@ class Inscription(abstract.AbstractBaseModel):
     type_of_inscription = models.ForeignKey(InscriptionType, on_delete=models.SET_NULL,  blank=True, null=True)
     genre = models.ManyToManyField(Genre, blank=True, help_text=_("Genre of the inscription"), verbose_name="Textual genre")
     tags = models.ManyToManyField(Tag, blank=True, verbose_name=_("Pictorial descriptions"), help_text=_("Descriptions attached to the graffiti"))
+    elevation = models.IntegerField(null=True, blank=True, help_text=_("Elevation of inscription from the floor, in mm"))
+    height = models.IntegerField(null=True, blank=True, help_text=_("Height of inscription, in mm"))
+    width = models.IntegerField(null=True, blank=True, help_text=_("Width of inscription, in mm"))
     language = models.ForeignKey(Language, on_delete=models.SET_NULL, blank=True, null=True)
     writing_system = models.ForeignKey(WritingSystem, on_delete=models.SET_NULL, blank=True, null=True)
+    dating_criteria = models.ForeignKey(DatingCriterium, on_delete=models.SET_NULL, blank=True, null=True)
     
     # graffiti data
     transcription = RichTextField(null=True, blank=True, verbose_name=_("Textual graffiti"), help_text=_("Transcription of the graffiti"))
     interpretative_edition = RichTextField(null=True, blank=True, help_text=_("Interpretation of the graffiti"))
     romanisation = RichTextField(null=True, blank=True, help_text=_("Romanisation of the graffiti"))
-    translations = models.ManyToManyField("Translation", blank=True)
-    comments = models.ManyToManyField("Description", blank=True, verbose_name=_("Comments"))
+    mentioned_person = models.ManyToManyField(HistoricalPerson, blank=True, related_name="people_mentioned")
+    inscriber = models.ForeignKey(HistoricalPerson, on_delete=models.SET_NULL, blank=True, null=True, related_name="inscription_inscriber")
+    translation_eng = RichTextField(null=True, blank=True, verbose_name=_("Translation (English)")) # models.ManyToManyField("Translation", blank=True)
+    translation_ukr = RichTextField(null=True, blank=True, verbose_name=_("Переклад (укр)"))
+    comments_eng = RichTextField(null=True, blank=True, verbose_name=_("Comments (English)")) # models.ManyToManyField("Description", blank=True, verbose_name=_("Comments"))
+    comments_ukr = RichTextField(null=True, blank=True, verbose_name=_("Коментарі (укр)"))
     
     # material metadata
     condition = models.ManyToManyField(GraffitiCondition, blank=True, verbose_name=_("Graffiti condition"), help_text=_("In what condition is the graffiti?"))
     alignment = models.ManyToManyField(GraffitiAlignment, blank=True, verbose_name=_("Graffiti alignment"), help_text=_("Is the graffiti aligned in some way?"))
     extra_alphabetical_sign = models.ManyToManyField(ExtraAlphabeticalSign, blank=True, verbose_name=_("Extra-alphabetical signs"))
-    
-    # location on surface
-    elevation = models.IntegerField(null=True, blank=True, help_text=_("Elevation of inscription from the floor, in mm"))
-    height = models.IntegerField(null=True, blank=True, help_text=_("Height of inscription, in mm"))
-    width = models.IntegerField(null=True, blank=True, help_text=_("Width of inscription, in mm"))
     
     # bibliography and contributions
     bibliography = models.ManyToManyField(BibliographyItem, blank=True, help_text=_("Add bibliography items"))
@@ -342,35 +353,35 @@ class ObjectMesh3D(abstract.AbstractBaseModel):
         verbose_name_plural = _("Objects 3D Mesh")
     
 
-class Translation(abstract.AbstractBaseModel):
-    text = RichTextField(null=True, blank=True, verbose_name=_("Translation text"))
-    # inscription = models.ForeignKey(Inscription, null=True, blank=True, on_delete=models.CASCADE)#, related_name="translation")
-    author = models.ManyToManyField(Author, blank=True, verbose_name=_("Author"), default=None)
-    translation_language = models.ForeignKey(Language, blank=True, null=True, on_delete=models.SET_NULL, related_name="translation_language", default=None)
+# class Translation(abstract.AbstractBaseModel):
+#     text = RichTextField(null=True, blank=True, verbose_name=_("Translation text"))
+#     # inscription = models.ForeignKey(Inscription, null=True, blank=True, on_delete=models.CASCADE)#, related_name="translation")
+#     author = models.ManyToManyField(Author, blank=True, verbose_name=_("Author"), default=None)
+#     translation_language = models.ForeignKey(Language, blank=True, null=True, on_delete=models.SET_NULL, related_name="translation_language", default=None)
     
-    # def __str__(self) -> str:
-    #     if self.translation_language is not None:
-    #         return f"{self.translation_language} translation for {self.inscription}"
-    #     else:
-    #         return f"Translation for {self.inscription}"    
+#     # def __str__(self) -> str:
+#     #     if self.translation_language is not None:
+#     #         return f"{self.translation_language} translation for {self.inscription}"
+#     #     else:
+#     #         return f"Translation for {self.inscription}"    
     
-    class Meta:
-        verbose_name = _("Translation")
-        verbose_name_plural = _("Translations")
+#     class Meta:
+#         verbose_name = _("Translation")
+#         verbose_name_plural = _("Translations")
         
         
-class Description(abstract.AbstractBaseModel):
-    text = RichTextField(null=True, blank=True, verbose_name=_("Description text"))
-    # inscription = models.ForeignKey(Inscription, null=True, blank=True, on_delete=models.CASCADE)#, related_name="description")
-    author = models.ManyToManyField(Author, blank=True, verbose_name=_("Author"), default=None)
-    language = models.ForeignKey(Language, blank=True, null=True, default=None, on_delete=models.SET_NULL)
+# class Description(abstract.AbstractBaseModel):
+#     text = RichTextField(null=True, blank=True, verbose_name=_("Description text"))
+#     # inscription = models.ForeignKey(Inscription, null=True, blank=True, on_delete=models.CASCADE)#, related_name="description")
+#     author = models.ManyToManyField(Author, blank=True, verbose_name=_("Author"), default=None)
+#     language = models.ForeignKey(Language, blank=True, null=True, default=None, on_delete=models.SET_NULL)
     
-    # def __str__(self) -> str:
-    #     if self.language is not None:
-    #         return f"Description for {self.inscription} ({self.language})"
-    #     else:
-    #         return f"Description for {self.inscription}"
+#     # def __str__(self) -> str:
+#     #     if self.language is not None:
+#     #         return f"Description for {self.inscription} ({self.language})"
+#     #     else:
+#     #         return f"Description for {self.inscription}"
     
-    class Meta:
-        verbose_name = _("Description")
-        verbose_name_plural = _("Descriptions")
+#     class Meta:
+#         verbose_name = _("Description")
+#         verbose_name_plural = _("Descriptions")

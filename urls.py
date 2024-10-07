@@ -22,8 +22,8 @@ router.register(rf'{endpoint}/object-mesh-3d', views.ObjectRTIViewSet, basename=
 router.register(rf'{endpoint}/inscription', views.InscriptionViewSet, basename='inscription')
 router.register(rf'{endpoint}/inscription-string', views.InscriptionStringViewSet, basename='inscriptions beginning by string')
 router.register(rf'{endpoint}/inscription-contributors', views.ContributorsViewSet, basename='contributors to inscription')
-router.register(rf'{endpoint}/description', views.DescriptionViewSet, basename='description')
-router.register(rf'{endpoint}/translation', views.TranslationViewSet, basename='translation')
+# router.register(rf'{endpoint}/description', views.DescriptionViewSet, basename='description')
+# router.register(rf'{endpoint}/translation', views.TranslationViewSet, basename='translation')
 router.register(rf'{endpoint}/annotation', views.AnnotationViewSet, basename='annotations')
 router.register(rf'{endpoint}/inscription-tags', views.InscriptionTagsViewSet, basename="tags for inscriptions")
 
