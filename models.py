@@ -256,7 +256,7 @@ class Inscription(abstract.AbstractBaseModel):
     width = models.IntegerField(null=True, blank=True, help_text=_("Width of inscription, in mm"))
     language = models.ForeignKey(Language, on_delete=models.SET_NULL, blank=True, null=True)
     writing_system = models.ForeignKey(WritingSystem, on_delete=models.SET_NULL, blank=True, null=True)
-    dating_criteria = models.ForeignKey(DatingCriterium, on_delete=models.SET_NULL, blank=True, null=True)
+    dating_criteria = models.ManyToManyField(DatingCriterium, blank=True)
     
     # graffiti data
     transcription = RichTextField(null=True, blank=True, verbose_name=_("Textual graffiti"), help_text=_("Transcription of the graffiti"))
