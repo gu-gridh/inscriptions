@@ -130,7 +130,7 @@ class InscriptionAdmin(admin.ModelAdmin,):
     # readonly_fields = ['panel']
     list_display = ['panel', 'id', 'language', 'title']
     search_fields = ['id', 'language__text', 'panel__title']
-    autocomplete_fields = ['panel']
+    autocomplete_fields = ['panel', 'inscriber']
 
 
 @admin.register(Image)

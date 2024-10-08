@@ -253,7 +253,7 @@ class Panel(abstract.AbstractBaseModel):
 class Inscription(abstract.AbstractBaseModel):
     # metadata
     position_on_surface = models.CharField(max_length=128, blank=True, null=True, verbose_name=_("Position on surface"), help_text=_("Position on the surface (PASTE HERE LINK COPIED IN CLIPBOARD)"))
-    title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("Title"), help_text=_("fill if the inscription is known by an official name"))
+    title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("Alternative title"), help_text=_("Fill in if the inscription is known by an alternative name"))
     panel = models.ForeignKey(Panel, on_delete=models.CASCADE, blank=True, null=True, related_name="inscriptions", verbose_name=_("Surface"))
     
     # graffiti metadata
@@ -285,7 +285,7 @@ class Inscription(abstract.AbstractBaseModel):
     
     # bibliography and contributions
     bibliography = models.ManyToManyField(BibliographyItem, blank=True, help_text=_("Add bibliography items"))
-    author = models.ManyToManyField(Author, blank=True, help_text=_("List of authors for this inscription"))
+    author = models.ManyToManyField(Author, blank=True, verbose_name=_("Contributors"), help_text=_("List of authors for this inscription"))
     
     
     def __str__(self) -> str:
