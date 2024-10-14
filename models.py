@@ -265,6 +265,8 @@ class Inscription(abstract.AbstractBaseModel):
     width = models.IntegerField(null=True, blank=True, help_text=_("Width of inscription, in mm"))
     language = models.ForeignKey(Language, on_delete=models.SET_NULL, blank=True, null=True)
     writing_system = models.ForeignKey(WritingSystem, on_delete=models.SET_NULL, blank=True, null=True)
+    min_year = models.IntegerField(null=True, blank=True, verbose_name=_("Lower dating boundary"), help_text=_("If no lower boundary is known (e.g. 'before XII century') leave blank."))
+    max_year = models.IntegerField(null=True, blank=True, verbose_name=_("Higher dating boundary"), help_text=_("If no higher boundary is known (e.g. 'after XII century') leave blank."))
     dating_criteria = models.ManyToManyField(DatingCriterium, blank=True)
     
     # graffiti data
