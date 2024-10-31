@@ -83,6 +83,18 @@ class MediumAdmin(admin.ModelAdmin):
     search_fields = ['text', 'text_ukr']
 
 
+@admin.register(Material)
+class MaterialAdmin(admin.ModelAdmin):
+    list_display = ['text', 'text_ukr']
+    search_fields = ['text', 'text_ukr']
+
+
+@admin.register(Section)
+class SectionAdmin(admin.ModelAdmin):
+    list_display = ['text', 'text_ukr']
+    search_fields = ['text', 'text_ukr']
+
+
 @admin.register(Author)
 class AuthorAdmin(admin.ModelAdmin):
     list_display = ['firstname', 'lastname']

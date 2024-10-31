@@ -168,6 +168,36 @@ class Medium(abstract.AbstractTagModel):
     def __repr__(self) -> str:
         return str(self)
 
+
+class Material(abstract.AbstractTagModel):
+    text_ukr = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("матеріал (укр)"))
+    uniform_resource_identifier = models.URLField(blank=True, null=True)
+    
+    class Meta:
+        verbose_name = _("Material")
+        verbose_name_plural = _("Materials")
+
+    def __str__(self) -> str:
+        return self.text
+    
+    def __repr__(self) -> str:
+        return str(self)
+
+
+class Section(abstract.AbstractTagModel):
+    text_ukr = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("розділ (укр)"))
+    uniform_resource_identifier = models.URLField(blank=True, null=True)
+    
+    class Meta:
+        verbose_name = _("Section")
+        verbose_name_plural = _("Sections")
+
+    def __str__(self) -> str:
+        return self.text
+    
+    def __repr__(self) -> str:
+        return str(self)
+
 # DEFINE OBJECTS MODELS
 
 class Author(abstract.AbstractBaseModel):
