@@ -17,6 +17,12 @@ class WritingSystemSerializer(DynamicDepthSerializer):
     class Meta:
         model = WritingSystem
         fields = get_fields(WritingSystem, exclude=DEFAULT_FIELDS) + ['id']
+
+
+class GenreSerializer(DynamicDepthSerializer):
+    class Meta:
+        model = Genre
+        fields = get_fields(Genre, exclude=DEFAULT_FIELDS) + ['id']
         
 
 class PanelSerializer(DynamicDepthSerializer):

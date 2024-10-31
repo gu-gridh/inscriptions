@@ -259,7 +259,7 @@ class Panel(abstract.AbstractBaseModel):
     documentation = models.ManyToManyField(Documentation, blank=True, verbose_name=_("documentation"), default=None)
     spatial_position = ArrayField(models.FloatField(), size=3, default=list, help_text=_("Format: 3 comma-separated float numbers, e.g.: 0.0, 1.1, 2.2"), blank=True, null=True)
     spatial_direction = ArrayField(models.FloatField(), size=3, default=list, help_text=_("Format: 3 comma-separated float numbers, e.g.: 0.0, 1.1, 2.2"), blank=True, null=True)
-    tags = models.ManyToManyField(Tag, blank=True, help_text=_("Tags attached to the panel"))
+    tags = models.ManyToManyField(Tag, blank=True, help_text=_("Tags attached to the panel"), related_name='surfaces')
     
     class DataForPanel(models.IntegerChoices):
         POSITION = (1, "1")
@@ -306,13 +306,13 @@ class Inscription(abstract.AbstractBaseModel):
     
     # graffiti metadata
     type_of_inscription = models.ForeignKey(InscriptionType, on_delete=models.SET_NULL,  blank=True, null=True)
-    genre = models.ManyToManyField(Genre, blank=True, help_text=_("Genre of the inscription"), verbose_name="Textual genre")
-    tags = models.ManyToManyField(Tag, blank=True, verbose_name=_("Pictorial descriptions"), help_text=_("Descriptions attached to the graffiti"))
+    genre = models.ManyToManyField(Genre, blank=True, help_text=_("Genre of the inscription"), verbose_name="Textual genre", related_name='inscriptions')
+    tags = models.ManyToManyField(Tag, blank=True, verbose_name=_("Pictorial descriptions"), help_text=_("Descriptions attached to the graffiti"), related_name='inscriptions')
     elevation = models.IntegerField(null=True, blank=True, help_text=_("Elevation of inscription from the floor, in mm"))
     height = models.IntegerField(null=True, blank=True, help_text=_("Height of inscription, in mm"))
     width = models.IntegerField(null=True, blank=True, help_text=_("Width of inscription, in mm"))
-    language = models.ForeignKey(Language, on_delete=models.SET_NULL, blank=True, null=True)
-    writing_system = models.ForeignKey(WritingSystem, on_delete=models.SET_NULL, blank=True, null=True)
+    language = models.ForeignKey(Language, on_delete=models.SET_NULL, blank=True, null=True, related_name='inscriptions')
+    writing_system = models.ForeignKey(WritingSystem, on_delete=models.SET_NULL, blank=True, null=True, related_name='inscriptions')
     min_year = models.IntegerField(null=True, blank=True, verbose_name=_("Lower dating boundary"), help_text=_("If no lower boundary is known (e.g. 'before XII century') leave blank."))
     max_year = models.IntegerField(null=True, blank=True, verbose_name=_("Higher dating boundary"), help_text=_("If no higher boundary is known (e.g. 'after XII century') leave blank."))
     dating_criteria = models.ManyToManyField(DatingCriterium, blank=True)

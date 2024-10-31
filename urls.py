@@ -22,10 +22,12 @@ router.register(rf'{endpoint}/object-mesh-3d', views.ObjectRTIViewSet, basename=
 router.register(rf'{endpoint}/inscription', views.InscriptionViewSet, basename='inscription')
 router.register(rf'{endpoint}/inscription-string', views.InscriptionStringViewSet, basename='inscriptions beginning by string')
 router.register(rf'{endpoint}/inscription-contributors', views.ContributorsViewSet, basename='contributors to inscription')
-# router.register(rf'{endpoint}/description', views.DescriptionViewSet, basename='description')
-# router.register(rf'{endpoint}/translation', views.TranslationViewSet, basename='translation')
 router.register(rf'{endpoint}/annotation', views.AnnotationViewSet, basename='annotations')
 router.register(rf'{endpoint}/inscription-tags', views.InscriptionTagsViewSet, basename="tags for inscriptions")
+router.register(rf'{endpoint}/tags-with-data', views.TagsWithDataViewSet, basename="tags with data attached")
+router.register(rf'{endpoint}/genre-with-data', views.GenreDataViewSet, basename="genre with data attached")
+router.register(rf'{endpoint}/writing-system-with-data', views.WritingSystemWithDataViewSet, basename="writing system with data attached")
+router.register(rf'{endpoint}/language-with-data', views.LanguageWithDataViewSet, basename="language with data attached")
 
 urlpatterns = [
     path('', include(router.urls)),

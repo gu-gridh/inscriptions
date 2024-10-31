@@ -3,7 +3,6 @@ from . import models, serializers
 from django.db.models import Q, Value, Case, When
 from saintsophia.abstract.views import DynamicDepthViewSet, GeoViewSet
 from saintsophia.abstract.models import get_fields, DEFAULT_FIELDS
-# from django.db.models import Q
 from django.http import HttpResponse
 import json
 import django_filters
@@ -14,12 +13,36 @@ class LanguageViewSet(DynamicDepthViewSet):
     queryset = models.Language.objects.all().order_by('text')
     serializer_class = serializers.LanguageSerializer
     filterset_fields = get_fields(models.Language, exclude=DEFAULT_FIELDS)
+
+
+class LanguageWithDataViewSet(DynamicDepthViewSet):
+    queryset = models.Language.objects.all().filter(Q(inscriptions__isnull=False)).order_by('text')
+    serializer_class = serializers.LanguageSerializer
+    filterset_fields = get_fields(models.Language, exclude=DEFAULT_FIELDS)
     
 
 class WritingSystemViewSet(DynamicDepthViewSet):
     queryset = models.WritingSystem.objects.all().order_by('text')
     serializer_class = serializers.WritingSystemSerializer
     filterset_fields = get_fields(models.WritingSystem, exclude=DEFAULT_FIELDS)
+
+
+class WritingSystemWithDataViewSet(DynamicDepthViewSet):
+    queryset = models.WritingSystem.objects.all().filter(Q(inscriptions__isnull=False)).order_by('text')
+    serializer_class = serializers.WritingSystemSerializer
+    filterset_fields = get_fields(models.WritingSystem, exclude=DEFAULT_FIELDS)
+
+
+class TagsWithDataViewSet(DynamicDepthViewSet):
+    queryset = models.Tag.objects.all().filter(Q(surfaces__isnull=False) and Q(inscriptions__isnull=False)).order_by('text')
+    serializer_class = serializers.InscriptionTagsSerializer
+    filterset_fields = get_fields(models.Tag, exclude=DEFAULT_FIELDS)
+
+
+class GenreDataViewSet(DynamicDepthViewSet):
+    queryset = models.Genre.objects.all().filter(Q(inscriptions__isnull=False)).order_by('text')
+    serializer_class = serializers.GenreSerializer
+    filterset_fields = get_fields(models.Tag, exclude=DEFAULT_FIELDS)
 
 
 class ContributorsViewSet(DynamicDepthViewSet):
