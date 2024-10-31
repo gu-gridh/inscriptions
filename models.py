@@ -251,6 +251,10 @@ class Panel(abstract.AbstractBaseModel):
     title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("title"), help_text=_("this field refers to the surface designation"))
     room = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("room"), help_text=_("this field refers to the room in which the surface stands"))
     geometry = models.GeometryField(verbose_name=_("geometry"), blank=True, null=True)
+
+    medium = models.ForeignKey(Medium, on_delete=models.SET_NULL, blank=True, null=True)
+    material = models.ForeignKey(Material, on_delete=models.SET_NULL, blank=True, null=True)
+    section = models.ForeignKey(Section, on_delete=models.SET_NULL, blank=True, null=True)
    
     documentation = models.ManyToManyField(Documentation, blank=True, verbose_name=_("documentation"), default=None)
     spatial_position = ArrayField(models.FloatField(), size=3, default=list, help_text=_("Format: 3 comma-separated float numbers, e.g.: 0.0, 1.1, 2.2"), blank=True, null=True)
