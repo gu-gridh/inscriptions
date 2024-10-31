@@ -211,8 +211,8 @@ class Author(abstract.AbstractBaseModel):
 
 
 class HistoricalPerson(abstract.AbstractBaseModel):
-    firstname = models.CharField(max_length=256, blank=True, null=True, verbose_name=_("First name"))
-    lastname = models.CharField(max_length=256, blank=True, null=True, verbose_name=_("Last name"))
+    name = models.CharField(max_length=256, blank=True, null=True, verbose_name=_("Name (eng)"))
+    name_ukr = models.CharField(max_length=256, blank=True, null=True, verbose_name=_("назва (укр)"))
     uniform_resource_identifier = models.URLField(blank=True, null=True)
     
     def __str__(self) -> str:

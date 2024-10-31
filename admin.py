@@ -102,9 +102,9 @@ class AuthorAdmin(admin.ModelAdmin):
     
     
 @admin.register(HistoricalPerson)
-class AuthorHistoricalPerson(admin.ModelAdmin):
-    list_display = ['firstname', 'lastname']
-    search_fields = ['firstname', 'lastname']
+class HistoricalPerson(admin.ModelAdmin):
+    list_display = ['name', 'name_ukr']
+    search_fields = ['name', 'name_ukr']
     
 
 @admin.register(BibliographyItem)
