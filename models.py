@@ -154,6 +154,20 @@ class WritingSystem(abstract.AbstractTagModel):
     def __repr__(self) -> str:
         return str(self)
 
+class Medium(abstract.AbstractTagModel):
+    text_ukr = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("? (укр)"))
+    uniform_resource_identifier = models.URLField(blank=True, null=True)
+    
+    class Meta:
+        verbose_name = _("Medium")
+        verbose_name_plural = _("Media")
+
+    def __str__(self) -> str:
+        return self.text
+    
+    def __repr__(self) -> str:
+        return str(self)
+
 # DEFINE OBJECTS MODELS
 
 class Author(abstract.AbstractBaseModel):

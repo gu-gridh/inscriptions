@@ -77,6 +77,12 @@ class WritingSystemAdmin(admin.ModelAdmin):
     search_fields = ['text', 'text_ukr']
 
 
+@admin.register(Medium)
+class MediumAdmin(admin.ModelAdmin):
+    list_display = ['text', 'text_ukr']
+    search_fields = ['text', 'text_ukr']
+
+
 @admin.register(Author)
 class AuthorAdmin(admin.ModelAdmin):
     list_display = ['firstname', 'lastname']
