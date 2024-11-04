@@ -150,6 +150,8 @@ class InscriptionAdmin(admin.ModelAdmin,):
     search_fields = ['id', 'language__text', 'panel__title']
     autocomplete_fields = ['panel', 'inscriber']
 
+    change_form_template = 'apps/inscriptions/inscription_change_form.html'
+
 
 @admin.register(Image)
 class ImageAdmin(admin.ModelAdmin,):
