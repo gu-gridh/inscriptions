@@ -55,16 +55,16 @@ class ContributorsViewSet(DynamicDepthViewSet):
         inscription_id = self.request.query_params.get('id')
         if inscription_id:
             inscriptions = queryset.filter(id=inscription_id)
-            descriptions = models.Description.objects.all().filter(inscription__id=inscription_id)
-            translations = models.Translation.objects.all().filter(inscription__id=inscription_id)
+            #descriptions = models.Description.objects.all().filter(inscription__id=inscription_id)
+            #translations = models.Translation.objects.all().filter(inscription__id=inscription_id)
         else:
             inscriptions = queryset
-            descriptions = models.Description.objects.all()
-            translations = models.Translation.objects.all()
+            #descriptions = models.Description.objects.all()
+            #translations = models.Translation.objects.all()
             
         inscription_serializer = serializers.InscriptionSerializer(inscriptions, many=True)
-        description_serializer = serializers.DescriptionSerializer(descriptions, many=True)
-        translation_serializer = serializers.TranslationSerializer(translations, many=True)
+        #description_serializer = serializers.DescriptionSerializer(descriptions, many=True)
+        #translation_serializer = serializers.TranslationSerializer(translations, many=True)
         
         formatted_data = []
         list_of_authors = []
@@ -74,15 +74,15 @@ class ContributorsViewSet(DynamicDepthViewSet):
             for author_id in inscriptions_authors:
                 list_of_authors.append(models.Author.objects.get(id = author_id))
                 
-        for description in description_serializer.data:
-            description_authors = description.get('author')
-            for author_id in description_authors:
-                list_of_authors.append(models.Author.objects.get(id = author_id))
+        # for description in description_serializer.data:
+        #     description_authors = description.get('author')
+        #     for author_id in description_authors:
+        #         list_of_authors.append(models.Author.objects.get(id = author_id))
                 
-        for translation in translation_serializer.data:
-            translation_authors = translation.get('author')
-            for author_id in translation_authors:
-                list_of_authors.append(models.Author.objects.get(id = author_id))
+        # for translation in translation_serializer.data:
+        #     translation_authors = translation.get('author')
+        #     for author_id in translation_authors:
+        #         list_of_authors.append(models.Author.objects.get(id = author_id))
             
         list_of_authors = set(list_of_authors)
         authors_names = [f"{author.lastname} {author.firstname}" for author in list_of_authors]
