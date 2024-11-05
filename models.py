@@ -216,7 +216,7 @@ class HistoricalPerson(abstract.AbstractBaseModel):
     uniform_resource_identifier = models.URLField(blank=True, null=True)
     
     def __str__(self) -> str:
-        return f"{self.firstname} {self.lastname}"
+        return f"{self.name} {self.name_ukr}"
     
 
 class BibliographyItem(abstract.AbstractBaseModel):
