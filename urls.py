@@ -34,8 +34,8 @@ urlpatterns = [
 
     # Automatically generated views
     *utils.get_model_urls('inscriptions', endpoint, 
-        exclude=['panel', 'image','inscription', 'translation', 'description', 'objectrti', 'objectmesh3d']),
+        exclude=['panel', 'image','inscription', 'translation', 'objectrti', 'objectmesh3d']),
 
-    *utils.get_model_urls('inscriptions', f'{endpoint}', exclude=['panel', 'image', 'inscription', 'translation', 'description', 'objectrti', 'objectmesh3d']),
+    *utils.get_model_urls('inscriptions', f'{endpoint}', exclude=['panel', 'image', 'inscription', 'translation', 'objectrti', 'objectmesh3d']),
     *documentation
 ]
