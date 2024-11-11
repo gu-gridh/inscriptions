@@ -55,16 +55,10 @@ class ContributorsViewSet(DynamicDepthViewSet):
         inscription_id = self.request.query_params.get('id')
         if inscription_id:
             inscriptions = queryset.filter(id=inscription_id)
-            #descriptions = models.Description.objects.all().filter(inscription__id=inscription_id)
-            #translations = models.Translation.objects.all().filter(inscription__id=inscription_id)
         else:
             inscriptions = queryset
-            #descriptions = models.Description.objects.all()
-            #translations = models.Translation.objects.all()
-            
+
         inscription_serializer = serializers.InscriptionSerializer(inscriptions, many=True)
-        #description_serializer = serializers.DescriptionSerializer(descriptions, many=True)
-        #translation_serializer = serializers.TranslationSerializer(translations, many=True)
         
         formatted_data = []
         list_of_authors = []
@@ -73,16 +67,6 @@ class ContributorsViewSet(DynamicDepthViewSet):
             inscriptions_authors = inscription.get('author')
             for author_id in inscriptions_authors:
                 list_of_authors.append(models.Author.objects.get(id = author_id))
-                
-        # for description in description_serializer.data:
-        #     description_authors = description.get('author')
-        #     for author_id in description_authors:
-        #         list_of_authors.append(models.Author.objects.get(id = author_id))
-                
-        # for translation in translation_serializer.data:
-        #     translation_authors = translation.get('author')
-        #     for author_id in translation_authors:
-        #         list_of_authors.append(models.Author.objects.get(id = author_id))
             
         list_of_authors = set(list_of_authors)
         authors_names = [f"{author.lastname} {author.firstname}" for author in list_of_authors]
@@ -178,48 +162,6 @@ class PanelStringViewSet(DynamicDepthViewSet):
         return queryset
         
     
-    
-# class SurfaceTagsViewSet(DynamicDepthViewSet):
-#     queryset = models.Panel.objects.all().order_by('title')
-#     filterset_fields = get_fields(models.Panel, exclude=DEFAULT_FIELDS+['geometry', 'spatial_position', 'spatial_direction'])
-    
-#     def list(self, request):
-#         queryset = models.Panel.objects.all().order_by('title')
-#         filterset_fields = get_fields(models.Panel, exclude=DEFAULT_FIELDS+['geometry', 'spatial_position', 'spatial_direction'])
-        
-#         all_tags = models.Tag.objects.all()
-        
-#         surface = self.request.query_params.get('title')
-        
-#         if surface:
-#              = queryset.filter(panel__title__contains = surface)
-#         else:
-#             inscriptions = queryset
-        
-#         serializer = serializers.InscriptionSerializer(inscriptions, many=True)
-        
-#         formatted_data = []
-#         list_of_tags = []
-#         for inscription in serializer.data:
-            
-#             tags = inscription.get('tags')
-            
-#             for tag_id in tags:
-                
-#                 selected_tag = all_tags.get(pk=tag_id)
-                
-#                 if selected_tag.text not in list_of_tags:
-#                     data = {
-#                         "tag_eng" : selected_tag.text,
-#                         "tag_ukr" : selected_tag.text_ukr
-#                     }
-                    
-#                     list_of_tags.append(selected_tag.text)
-#                     formatted_data.append(data)
-        
-#         return Response(formatted_data)
-
-    
 class InscriptionViewSet(DynamicDepthViewSet):
     queryset = models.Inscription.objects.all()#.order_by('title')
     serializer_class = serializers.InscriptionSerializer
@@ -268,7 +210,6 @@ class InscriptionTagsViewSet(DynamicDepthViewSet):
     
 def inscription_contains_str(string, inscription):
     denomination = f"{inscription.panel.title}:{inscription.id}"
-    # print(denomination, denomination.startswith(string))
     
     return denomination.startswith(string)
 
@@ -378,15 +319,3 @@ class ObjectRTIViewSet(DynamicDepthViewSet):
     queryset = models.ObjectMesh3D.objects.all().order_by('id')
     serializer_class = serializers.ObjectMesh3DSerializer
     filterset_fields = get_fields(models.ObjectMesh3D, exclude=DEFAULT_FIELDS)
-    
-   
-# class TranslationViewSet(DynamicDepthViewSet):
-#     queryset = models.Translation.objects.all().order_by('id')
-#     serializer_class = serializers.TranslationSerializer
-#     filterset_fields = get_fields(models.Translation, exclude=DEFAULT_FIELDS) 
-
-
-# class DescriptionViewSet(DynamicDepthViewSet):
-#     queryset = models.Description.objects.all().order_by('id')
-#     serializer_class = serializers.DescriptionSerializer 
-#     filterset_fields = get_fields(models.Description, exclude=DEFAULT_FIELDS) 
