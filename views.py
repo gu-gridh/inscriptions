@@ -9,38 +9,44 @@ import django_filters
 from rest_framework.response import Response
 
 
+class TagViewSet(DynamicDepthViewSet):
+    queryset = models.Tag.objects.all().order_by('text').distinct()
+    serializer_class = serializers.InscriptionTagsSerializer
+    filterset_fields = get_fields(models.Tag, exclude=DEFAULT_FIELDS)
+
+
 class LanguageViewSet(DynamicDepthViewSet):
-    queryset = models.Language.objects.all().order_by('text')
+    queryset = models.Language.objects.all().order_by('text').distinct()
     serializer_class = serializers.LanguageSerializer
     filterset_fields = get_fields(models.Language, exclude=DEFAULT_FIELDS)
 
 
 class LanguageWithDataViewSet(DynamicDepthViewSet):
-    queryset = models.Language.objects.all().filter(Q(inscriptions__isnull=False)).order_by('text')
+    queryset = models.Language.objects.all().filter(Q(inscriptions__isnull=False)).order_by('text').distinct()
     serializer_class = serializers.LanguageSerializer
     filterset_fields = get_fields(models.Language, exclude=DEFAULT_FIELDS)
     
 
 class WritingSystemViewSet(DynamicDepthViewSet):
-    queryset = models.WritingSystem.objects.all().order_by('text')
+    queryset = models.WritingSystem.objects.all().order_by('text').distinct()
     serializer_class = serializers.WritingSystemSerializer
     filterset_fields = get_fields(models.WritingSystem, exclude=DEFAULT_FIELDS)
 
 
 class WritingSystemWithDataViewSet(DynamicDepthViewSet):
-    queryset = models.WritingSystem.objects.all().filter(Q(inscriptions__isnull=False)).order_by('text')
+    queryset = models.WritingSystem.objects.all().filter(Q(inscriptions__isnull=False)).order_by('text').distinct()
     serializer_class = serializers.WritingSystemSerializer
     filterset_fields = get_fields(models.WritingSystem, exclude=DEFAULT_FIELDS)
 
 
 class TagsWithDataViewSet(DynamicDepthViewSet):
-    queryset = models.Tag.objects.all().filter(Q(surfaces__isnull=False) and Q(inscriptions__isnull=False)).order_by('text')
+    queryset = models.Tag.objects.all().filter(Q(surfaces__isnull=False) and Q(inscriptions__isnull=False)).order_by('text').distinct()
     serializer_class = serializers.InscriptionTagsSerializer
     filterset_fields = get_fields(models.Tag, exclude=DEFAULT_FIELDS)
 
 
 class GenreDataViewSet(DynamicDepthViewSet):
-    queryset = models.Genre.objects.all().filter(Q(inscriptions__isnull=False)).order_by('text')
+    queryset = models.Genre.objects.all().filter(Q(inscriptions__isnull=False)).order_by('text').distinct()
     serializer_class = serializers.GenreSerializer
     filterset_fields = get_fields(models.Tag, exclude=DEFAULT_FIELDS)
 
@@ -50,7 +56,7 @@ class ContributorsViewSet(DynamicDepthViewSet):
     filterset_fields = get_fields(models.Inscription, exclude=DEFAULT_FIELDS)
     
     def list(self, request):
-        queryset = models.Inscription.objects.all().order_by('id')
+        queryset = models.Inscription.objects.all().order_by('title')
         
         inscription_id = self.request.query_params.get('id')
         if inscription_id:
@@ -91,7 +97,7 @@ class PanelViewSet(DynamicDepthViewSet):
 
 
 class PanelGeoViewSet(GeoViewSet):
-    queryset = models.Panel.objects.all().order_by('id')
+    queryset = models.Panel.objects.all().order_by('title')
     serializer_class = serializers.PanelGeoSerializer
     filterset_fields = get_fields(models.Panel, exclude=DEFAULT_FIELDS + ['geometry', 'spatial_position', 'spatial_direction'])
     bbox_filter_field = 'geometry'
@@ -111,7 +117,7 @@ class PanelCoordinatesViewSet(GeoViewSet):
     
     
     def get_queryset(self):
-        queryset = models.Panel.objects.all().order_by('id')
+        queryset = models.Panel.objects.all().order_by('title')
         floor = self.request.query_params.get('floor')
         published = self.request.query_params.get('published')
         
@@ -176,7 +182,7 @@ class InscriptionTagsViewSet(DynamicDepthViewSet):
         queryset = models.Inscription.objects.all().order_by('id')
         filterset_fields = get_fields(models.Inscription, exclude=DEFAULT_FIELDS+['pixels'])
         
-        all_tags = models.Tag.objects.all()
+        all_tags = models.Tag.objects.all().order_by('title')
         
         surface = self.request.query_params.get('surface')
         
