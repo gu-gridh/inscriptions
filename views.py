@@ -156,7 +156,6 @@ class PanelInfoViewSet(DynamicDepthViewSet):
     
 class PanelStringViewSet(DynamicDepthViewSet):
     serializer_class = serializers.PanelSerializer
-    # queryset = models.Panel.objects.all().order_by('id')
     filterset_fields = get_fields(models.Panel, exclude=DEFAULT_FIELDS + ['geometry', 'spatial_position', 'spatial_direction', 'published'])
     
     def get_queryset(self):
@@ -291,7 +290,6 @@ class IIIFImageViewSet(DynamicDepthViewSet):
     Returns a count of the existing images after the application of any filter.
     """
     
-    # queryset = models.Image.objects.all().order_by('id')
     serializer_class = serializers.TIFFImageSerializer
     filterset_fields = get_fields(models.Image, exclude=DEFAULT_FIELDS + ['iiif_file', 'file'])
     

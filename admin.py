@@ -145,7 +145,6 @@ class PanelAdmin(LeafletGeoAdmin, admin.ModelAdmin):
 @admin.register(Inscription)
 class InscriptionAdmin(admin.ModelAdmin,):
     filter_horizontal = ['tags', 'genre', 'author', 'condition', 'alignment', 'extra_alphabetical_sign', 'bibliography', 'mentioned_person', 'dating_criteria']
-    # readonly_fields = ['panel']
     list_display = ['panel', 'id', 'language', 'title']
     search_fields = ['id', 'language__text', 'panel__title']
     autocomplete_fields = ['panel', 'inscriber']
@@ -181,19 +180,3 @@ class ObjectMesh3DAdmin(admin.ModelAdmin):
     autocomplete_fields = ['panel']
     list_display = ['panel']
     search_fields = ['panel__title', 'url']
-    
-    
-# @admin.register(Translation)
-# class TranslationAdmin(admin.ModelAdmin):
-#     filter_horizontal = ['author']
-#     # autocomplete_fields = ['inscription']
-#     list_display = ['translation_language']
-#     search_fields = ['inscription__panel__title', 'text', 'language__text', 'language__text_ukr', 'inscription__title']
-    
-    
-# @admin.register(Description)
-# class DescriptionAdmin(admin.ModelAdmin):
-#     filter_horizontal = ['author']
-#     # autocomplete_fields = ['inscription']
-#     list_display = ['language']
-#     search_fields = ['inscription__panel__title', 'text', 'language__text', 'language__text_ukr', 'inscription__title']

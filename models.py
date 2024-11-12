@@ -440,37 +440,3 @@ class ObjectMesh3D(abstract.AbstractBaseModel):
     class Meta:
         verbose_name = _("Object 3D Mesh")
         verbose_name_plural = _("Objects 3D Mesh")
-    
-
-# class Translation(abstract.AbstractBaseModel):
-#     text = RichTextField(null=True, blank=True, verbose_name=_("Translation text"))
-#     # inscription = models.ForeignKey(Inscription, null=True, blank=True, on_delete=models.CASCADE)#, related_name="translation")
-#     author = models.ManyToManyField(Author, blank=True, verbose_name=_("Author"), default=None)
-#     translation_language = models.ForeignKey(Language, blank=True, null=True, on_delete=models.SET_NULL, related_name="translation_language", default=None)
-    
-#     # def __str__(self) -> str:
-#     #     if self.translation_language is not None:
-#     #         return f"{self.translation_language} translation for {self.inscription}"
-#     #     else:
-#     #         return f"Translation for {self.inscription}"    
-    
-#     class Meta:
-#         verbose_name = _("Translation")
-#         verbose_name_plural = _("Translations")
-        
-        
-# class Description(abstract.AbstractBaseModel):
-#     text = RichTextField(null=True, blank=True, verbose_name=_("Description text"))
-#     # inscription = models.ForeignKey(Inscription, null=True, blank=True, on_delete=models.CASCADE)#, related_name="description")
-#     author = models.ManyToManyField(Author, blank=True, verbose_name=_("Author"), default=None)
-#     language = models.ForeignKey(Language, blank=True, null=True, default=None, on_delete=models.SET_NULL)
-    
-#     # def __str__(self) -> str:
-#     #     if self.language is not None:
-#     #         return f"Description for {self.inscription} ({self.language})"
-#     #     else:
-#     #         return f"Description for {self.inscription}"
-    
-#     class Meta:
-#         verbose_name = _("Description")
-#         verbose_name_plural = _("Descriptions")

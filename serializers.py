@@ -173,17 +173,3 @@ class ObjectMesh3DSerializer(DynamicDepthSerializer):
     class Meta:
         model = ObjectMesh3D
         fields = get_fields(ObjectMesh3D, exclude=DEFAULT_FIELDS)+ ['id']
-        
-
-# class TranslationSerializer(DynamicDepthSerializer):
-
-#     class Meta:
-#         model = Translation
-#         fields = get_fields(Translation, exclude=DEFAULT_FIELDS)+ ['id']
-        
-        
-# class DescriptionSerializer(DynamicDepthSerializer):
-
-#     class Meta:
-#         model = Description
-#         fields = get_fields(Description, exclude=DEFAULT_FIELDS)+ ['id']
