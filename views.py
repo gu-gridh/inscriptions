@@ -366,6 +366,18 @@ class DataWidgetViewSet(DynamicDepthViewSet):
         if surface_id:
             inscriptions = inscriptions.filter(panel__id__exact=surface_id)
 
+        if media:
+            inscriptions = inscriptions.filter(panel__medium__id__exact=media)
+        
+        if material:
+            inscriptions = inscriptions.filter(panel__material__exact=material)
+
+        if alignment:
+            inscriptions = inscriptions.filter(alignment__id__exact=alignment)
+
+        if condition:
+            inscriptions = inscriptions.filter(condition__id__exact=condition)
+
         count_inscriptions_shown = inscriptions.all().count()
         count_hidden_inscriptions = count_all_inscriptions -  count_inscriptions_shown
 
