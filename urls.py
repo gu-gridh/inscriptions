@@ -29,6 +29,7 @@ router.register(rf'{endpoint}/tags-with-data', views.TagsWithDataViewSet, basena
 router.register(rf'{endpoint}/genre-with-data', views.GenreDataViewSet, basename="genre with data attached")
 router.register(rf'{endpoint}/writing-system-with-data', views.WritingSystemWithDataViewSet, basename="writing system with data attached")
 router.register(rf'{endpoint}/language-with-data', views.LanguageWithDataViewSet, basename="language with data attached")
+router.register(rf'{endpoint}/inscriptions-info', views.DataWidgetViewSet, basename="data for widget")
 
 urlpatterns = [
     path('', include(router.urls)),

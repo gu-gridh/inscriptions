@@ -325,3 +325,58 @@ class ObjectRTIViewSet(DynamicDepthViewSet):
     queryset = models.ObjectMesh3D.objects.all().order_by('id')
     serializer_class = serializers.ObjectMesh3DSerializer
     filterset_fields = get_fields(models.ObjectMesh3D, exclude=DEFAULT_FIELDS)
+
+
+class DataWidgetViewSet(DynamicDepthViewSet):
+
+    serializer_class = serializers.InscriptionSerializer
+
+    def list(self, request):
+        # Query Parameters 
+        type_of_inscription = self.request.query_params.get('type_of_inscription')
+        writing_system = self.request.query_params.get('writing_system')
+        textual_genre = self.request.query_params.get('textual_genre')
+        pictorial_description = self.request.query_params.get('pictorial_description')
+        language = self.request.query_params.get('language')
+        media = self.request.query_params.get('media')
+        material = self.request.query_params.get('material')
+        alignment = self.request.query_params.get('alignment')
+        condition = self.request.query_params.get('condition')
+
+        # Filtering places 
+        count_all_inscriptions = models.Inscription.objects.all().count()
+        inscriptions = models.Inscription.objects.all()
+        
+        if type_of_inscription:
+            inscriptions = inscriptions.filter(Q(type_of_inscription__id__exact=type_of_inscription))
+        
+        if writing_system:
+            inscriptions = inscriptions.filter(writing_system__id__exact=writing_system)
+        
+        if textual_genre:
+            inscriptions = inscriptions.filter(genre__id__exact=textual_genre)
+
+        if pictorial_description:
+            inscriptions = inscriptions.filter(tags__id__exact=pictorial_description)
+
+        if language:
+            inscriptions = inscriptions.filter(language__id__exact=language)
+        
+
+        count_inscriptions_shown = inscriptions.all().count()
+        count_hidden_inscriptions = count_all_inscriptions -  count_inscriptions_shown
+
+        count_textual_inscriptions = inscriptions.filter(type_of_inscription__id__exact=1).count() # 1 is for textual inscriptions
+        count_pictorial_inscriptions = inscriptions.filter(type_of_inscription__id__exact=2).count() # 2 is for textual inscriptions
+        count_composite_inscriptions = inscriptions.filter(type_of_inscription__id__exact=3).count() # 3 is for textual inscriptions
+        
+        data = {
+            'all_inscriptions': count_all_inscriptions,
+            'shown_inscriptions': count_inscriptions_shown,
+            'hidden_inscriptions': count_hidden_inscriptions,
+            'textual_inscriptions': count_textual_inscriptions,
+            'pictorial_inscriptions': count_pictorial_inscriptions,
+            'composites_inscriptions': count_composite_inscriptions
+        }
+
+        return HttpResponse(json.dumps(data))
