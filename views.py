@@ -338,6 +338,7 @@ class DataWidgetViewSet(DynamicDepthViewSet):
         textual_genre = self.request.query_params.get('textual_genre')
         pictorial_description = self.request.query_params.get('pictorial_description')
         language = self.request.query_params.get('language')
+        surface_id = self.request.query_params.get('surface_id')
         media = self.request.query_params.get('media')
         material = self.request.query_params.get('material')
         alignment = self.request.query_params.get('alignment')
@@ -361,7 +362,9 @@ class DataWidgetViewSet(DynamicDepthViewSet):
 
         if language:
             inscriptions = inscriptions.filter(language__id__exact=language)
-        
+
+        if surface_id:
+            inscriptions = inscriptions.filter(panel__id__exact=surface_id)
 
         count_inscriptions_shown = inscriptions.all().count()
         count_hidden_inscriptions = count_all_inscriptions -  count_inscriptions_shown

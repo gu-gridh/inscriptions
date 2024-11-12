@@ -216,7 +216,14 @@ class HistoricalPerson(abstract.AbstractBaseModel):
     uniform_resource_identifier = models.URLField(blank=True, null=True)
     
     def __str__(self) -> str:
-        return f"{self.name} {self.name_ukr}"
+        if self.name is not None and self.name_ukr is None:
+            return f"{self.name}"
+        if self.name_ukr is not None and self.name is None:
+            return f"{self.name_ukr}"
+        if self.name is not None and self.name_ukr is not None:
+            return f"{self.name} / {self.name_ukr}"
+        else:
+            return "N/A"
     
 
 class BibliographyItem(abstract.AbstractBaseModel):
