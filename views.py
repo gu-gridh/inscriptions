@@ -291,7 +291,7 @@ class IIIFImageViewSet(DynamicDepthViewSet):
     """
     
     serializer_class = serializers.TIFFImageSerializer
-    filterset_fields = get_fields(models.Image, exclude=DEFAULT_FIELDS + ['iiif_file', 'file'])
+    filterset_fields = get_fields(models.Image, exclude=DEFAULT_FIELDS + ['iiif_file', 'file']) + ['panel__medium', 'panel__material']
     
     def get_queryset(self):
         orthophotos = models.Image.objects.all().filter(type_of_image__text="Orthophoto")
