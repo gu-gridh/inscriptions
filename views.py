@@ -342,6 +342,7 @@ class DataWidgetViewSet(DynamicDepthViewSet):
         material = self.request.query_params.get('material')
         alignment = self.request.query_params.get('alignment')
         condition = self.request.query_params.get('condition')
+        mentioned_person = self.request.query_params.get('mentioned_person')
 
         # Filtering places 
         count_all_inscriptions = models.Inscription.objects.all().count()
@@ -379,6 +380,9 @@ class DataWidgetViewSet(DynamicDepthViewSet):
 
         if condition:
             inscriptions = inscriptions.filter(condition__id__exact=condition)
+
+        if mentioned_person:
+            inscriptions = inscriptions.filter(mentioned_person__id__exact=mentioned_person)
 
         count_inscriptions_shown = inscriptions.all().count()
         count_hidden_inscriptions = count_all_inscriptions -  count_inscriptions_shown
