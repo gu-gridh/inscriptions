@@ -171,12 +171,48 @@ class PanelStringViewSet(DynamicDepthViewSet):
             queryset = queryset.filter(title__startswith=str)
             
         return queryset
-        
+
+
+class InscriptionFilter(django_filters.FilterSet):
+    # panel__title = django_filters.CharFilter()
+
+    class Meta:
+        model = models.Inscription
+        fields = {
+            'title': ['exact', 'icontains', 'startswith'],
+            'panel': ['exact'],
+            'panel__title': ['exact', 'icontains', 'startswith'],
+            'panel__material': ['exact'],
+            'panel__medium': ['exact'],
+            'type_of_inscription': ['exact'],
+            'genre': ['exact'],
+            'tags': ['exact'],
+            'elevation': ['exact', 'gt', 'lt'],
+            'height': ['exact', 'gt', 'lt'],
+            'width': ['exact', 'gt', 'lt'],
+            'language': ['exact'],
+            'writing_system': ['exact'],
+            'min_year': ['exact', 'lt', 'gt', 'lte', 'gte'],
+            'max_year': ['exact', 'lt', 'gt', 'lte', 'gte'],
+            'dating_criteria': ['exact'],
+            'transcription': ['icontains'],
+            'interpretative_edition': ['icontains'],
+            'romanisation': ['icontains'],
+            'mentioned_person': ['exact'],
+            'inscriber': ['exact'],
+            'condition': ['exact'],
+            'alignment': ['exact'],
+            'extra_alphabetical_sign': ['exact'],
+            'author': ['exact'],
+        }
+
     
 class InscriptionViewSet(DynamicDepthViewSet):
     queryset = models.Inscription.objects.all()#.order_by('title')
     serializer_class = serializers.InscriptionSerializer
-    filterset_fields = get_fields(models.Inscription, exclude=DEFAULT_FIELDS)
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+    filterset_class = InscriptionFilter
+    # filterset_fields = get_fields(models.Inscription, exclude=DEFAULT_FIELDS)
     
 
 class InscriptionTagsViewSet(DynamicDepthViewSet):
@@ -283,7 +319,21 @@ class AnnotationViewSet(DynamicDepthViewSet):
         
         return Response(list_to_return)
 
-    
+
+class ImageFilter(django_filters.FilterSet):
+    # panel__title = django_filters.CharFilter()
+
+    class Meta:
+        model = models.Image
+        fields = {
+            'panel': ['exact'],
+            'type_of_image': ['exact'],
+            'panel__title': ['exact', 'icontains', 'startswith'],
+            'panel__material': ['exact'],
+            'panel__medium': ['exact'],
+        }
+
+
 class IIIFImageViewSet(DynamicDepthViewSet):
     """
     retrieve:
@@ -297,7 +347,9 @@ class IIIFImageViewSet(DynamicDepthViewSet):
     """
     
     serializer_class = serializers.TIFFImageSerializer
-    filterset_fields = get_fields(models.Image, exclude=DEFAULT_FIELDS + ['iiif_file', 'file']) + ['panel__medium', 'panel__material']
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+    filterset_class = ImageFilter
+    # filterset_fields = get_fields(models.Image, exclude=DEFAULT_FIELDS + ['iiif_file', 'file']) + ['panel__medium', 'panel__material']
     
     def get_queryset(self):
         orthophotos = models.Image.objects.all().filter(type_of_image__text="Orthophoto")
