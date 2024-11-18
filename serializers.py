@@ -23,7 +23,13 @@ class GenreSerializer(DynamicDepthSerializer):
     class Meta:
         model = Genre
         fields = get_fields(Genre, exclude=DEFAULT_FIELDS) + ['id']
-        
+
+
+class HistoricalPersonSerializer(DynamicDepthSerializer):
+    class Meta:
+        model = HistoricalPerson
+        fields = get_fields(HistoricalPerson, exclude=DEFAULT_FIELDS) + ['id']
+
 
 class PanelSerializer(DynamicDepthSerializer):
 

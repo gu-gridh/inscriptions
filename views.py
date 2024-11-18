@@ -39,6 +39,12 @@ class WritingSystemWithDataViewSet(DynamicDepthViewSet):
     filterset_fields = get_fields(models.WritingSystem, exclude=DEFAULT_FIELDS)
 
 
+class HistoricalPersonViewSet(DynamicDepthViewSet):
+    queryset = models.HistoricalPerson.objects.all().order_by('name').distinct()
+    serializer_class = serializers.HistoricalPersonSerializer
+    filterset_fields = get_fields(models.HistoricalPerson, exclude=DEFAULT_FIELDS)
+
+
 class TagsWithDataViewSet(DynamicDepthViewSet):
     queryset = models.Tag.objects.all().filter(Q(surfaces__isnull=False) and Q(inscriptions__isnull=False)).order_by('text').distinct()
     serializer_class = serializers.InscriptionTagsSerializer
