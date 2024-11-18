@@ -179,6 +179,7 @@ class InscriptionFilter(django_filters.FilterSet):
     class Meta:
         model = models.Inscription
         fields = {
+            'id': ['exact'],
             'title': ['exact', 'icontains', 'startswith'],
             'panel': ['exact'],
             'panel__title': ['exact', 'icontains', 'startswith'],
@@ -326,6 +327,7 @@ class ImageFilter(django_filters.FilterSet):
     class Meta:
         model = models.Image
         fields = {
+            'id': ['exact'],
             'panel': ['exact'],
             'type_of_image': ['exact'],
             'panel__title': ['exact', 'icontains', 'startswith'],
@@ -401,6 +403,8 @@ class DataWidgetViewSet(DynamicDepthViewSet):
         alignment = self.request.query_params.get('alignment')
         condition = self.request.query_params.get('condition')
         mentioned_person = self.request.query_params.get('mentioned_person')
+        panel_title_str = self.request.query_params.get('panel_title_str')
+        inscription_title_str = self.request.query_params.get('inscription_title_str')
 
         # Filtering places 
         count_all_inscriptions = models.Inscription.objects.all().count()
@@ -441,6 +445,12 @@ class DataWidgetViewSet(DynamicDepthViewSet):
 
         if mentioned_person:
             inscriptions = inscriptions.filter(mentioned_person__id__exact=mentioned_person)
+
+        if panel_title_str:
+            inscriptions = inscriptions.filter(panel__title__startswith=panel_title_str)
+
+        if inscription_title_str:
+            inscriptions = inscriptions.filter(title__startswith=inscription_contains_str)
 
         count_inscriptions_shown = inscriptions.all().count()
         count_hidden_inscriptions = count_all_inscriptions -  count_inscriptions_shown
