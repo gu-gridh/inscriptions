@@ -33,7 +33,7 @@ router.register(rf'{endpoint}/language-with-data', views.LanguageWithDataViewSet
 router.register(rf'{endpoint}/inscriptions-info', views.DataWidgetViewSet, basename="data for widget")
 
 urlpatterns = [
-    # path('', include(router.urls)),
+    path('', include(router.urls)),
 
     # Automatically generated views
     *utils.get_model_urls('inscriptions', endpoint, 
