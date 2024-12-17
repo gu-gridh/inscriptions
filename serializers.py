@@ -123,16 +123,20 @@ class PanelMetadataSerializer(DynamicDepthSerializer):
 class PanelCoordinatesSerializer(GeoFeatureModelSerializer):
     
     floor = SerializerMethodField()
+    number_of_inscriptions = SerializerMethodField()
     
     class Meta:
         model = Panel
-        fields = ['id', 'title', 'floor', 'published', 'data_available']
+        fields = ['id', 'title', 'floor', 'number_of_inscriptions', 'published', 'data_available']
         geo_field = 'geometry'
         depth = 1
         
     def get_floor(self, obj):
         # the floor at which each panel can be found is the first character of the title
         return obj.title[0]
+
+    def get_number_of_inscriptions(self, obj):
+        return obj.inscriptions.count()
         
         
 class InscriptionSerializer(DynamicDepthSerializer):
