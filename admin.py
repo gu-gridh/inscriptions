@@ -166,7 +166,23 @@ class ImageAdmin(admin.ModelAdmin,):
     
     def thumbnail_preview(self, obj):
         return format_html(f'<img src="{settings.IIIF_URL}{obj.iiif_file}/full/full/0/default.jpg" height="100" />')
+
+
+@admin.register(GenericImage)
+class GenericImageAdmin(admin.ModelAdmin):
+    fields = ['image_preview', *get_fields(GenericImage, exclude=['id'])]
+    readonly_fields= ['iiif_file', 'uuid', 'image_preview', *DEFAULT_FIELDS]
+    autocomplete_fields = ['inscription']
+    list_display = ['inscription', 'type_of_image']
+    search_fields = ['inscription__title', 'type_of_image__text', 'iiif_file']
+    list_per_page = 10
     
+    def image_preview(self, obj):
+        return format_html(f'<img src="{settings.IIIF_URL}{obj.iiif_file}/full/full/0/default.jpg" height="300" />')
+    
+    def thumbnail_preview(self, obj):
+        return format_html(f'<img src="{settings.IIIF_URL}{obj.iiif_file}/full/full/0/default.jpg" height="100" />')
+
 
 @admin.register(ObjectRTI)
 class ObjectRTIAdmin(admin.ModelAdmin):

@@ -371,7 +371,24 @@ class IIIFImageViewSet(DynamicDepthViewSet):
         
         return queryset
     
+
+class GenericImageViewSet(DynamicDepthViewSet):
+    """
+    retrieve:
+    Returns a single image instance.
+
+    list:
+    Returns a list of all the existing images in the database, paginated.
+
+    count:
+    Returns a count of the existing images after the application of any filter.
+    """
+    queryset = models.GenericImage.objects.all().order_by('id')
+    serializer_class = serializers.TIFFImageSerializer
+    filterset_fields = get_fields(models.GenericImage, exclude=DEFAULT_FIELDS + ['iiif_file', 'file'])
     
+
+
     
 class ObjectRTIViewSet(DynamicDepthViewSet):
     queryset = models.ObjectRTI.objects.all().order_by('id')
