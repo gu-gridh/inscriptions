@@ -417,9 +417,11 @@ class Image(abstract.AbstractTIFFImageModel):
 
 
 class GenericImage(abstract.AbstractTIFFImageModel):
-    inscription = models.ForeignKey(Inscription, on_delete=models.CASCADE, related_name="generic_image_image", verbose_name="Inscription")
+    title = models.CharField(max_length=256, null=True, blank=True, help_text=_("If possible, same title as the Alternate Title of an Inscription."))
+    inscription = models.ForeignKey(Inscription, null=True, blank=True, on_delete=models.CASCADE, related_name="generic_image_image", verbose_name="Inscription")
     
     author = models.ForeignKey(Author, null=True, blank=True, on_delete=models.SET_NULL, related_name="photo_creator", verbose_name="Author")
+    year = models.IntegerField(null=True, blank=True)
     bibliography = models.ForeignKey(BibliographyItem, null=True, blank=True, on_delete=models.SET_NULL, related_name="photo_bibliography", verbose_name="Bibliographic reference")
     plate = models.IntegerField(null=True)
 

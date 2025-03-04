@@ -387,8 +387,6 @@ class GenericImageViewSet(DynamicDepthViewSet):
     serializer_class = serializers.TIFFImageSerializer
     filterset_fields = get_fields(models.GenericImage, exclude=DEFAULT_FIELDS + ['iiif_file', 'file'])
     
-
-
     
 class ObjectRTIViewSet(DynamicDepthViewSet):
     queryset = models.ObjectRTI.objects.all().order_by('id')
