@@ -474,6 +474,7 @@ class ObjectRTI(abstract.AbstractBaseModel):
         
         
 class ObjectMesh3D(abstract.AbstractBaseModel):
+    is_downloadable = models.BooleanField(verbose_name=_("Downloadable"), default=True)
     url = models.CharField(max_length=1024, blank=True, null=True, verbose_name=_("URL to location in storage"))
     panel = models.ForeignKey(Panel, null=True, blank=True, on_delete=models.CASCADE, related_name="mesh", verbose_name=_("Surface"))
     number_of_triangles = models.IntegerField(null=True, blank=True)

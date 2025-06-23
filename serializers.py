@@ -54,17 +54,43 @@ class PanelSerializer(DynamicDepthSerializer):
         inscriptions_on_panel = obj.inscriptions.all()
         
         return len(inscriptions_on_panel)
+
+
+class ObjectRTISerializer(DynamicDepthSerializer):
+
+    class Meta:
+        model = ObjectRTI
+        fields = get_fields(ObjectRTI, exclude=DEFAULT_FIELDS)+ ['id']
+
+
+class MeshFromPanelSerializer(DynamicDepthSerializer):
+    url_for_download = SerializerMethodField()
+
+    class Meta:
+        model = ObjectMesh3D
+        fields = get_fields(ObjectMesh3D, exclude=DEFAULT_FIELDS)+ ['id', 'url_for_download']
+
+    def get_url_for_download(self, obj):
+        # we can access the panel title from here...
+        surface_title = obj.panel.title
+        # ...or from here! Let's implement both right now and choose one to visualize, but we can always revert to the other!
+        location_url = obj.url
+        surface_from_url = (location_url.split('/')[-1]).split('.')[0]
+
+        url_download = f"https://data.dh.gu.se/saintsophia/meshoriginal/{surface_title}.zip"
         
+        return url_download
+
+
 class PanelGeoSerializer(GeoFeatureModelSerializer):
     attached_photograph = SerializerMethodField()
     attached_topography = SerializerMethodField()
-    attached_RTI = SerializerMethodField()
-    attached_3Dmesh = SerializerMethodField()
-
+    mesh = MeshFromPanelSerializer(many=True)
+    rti = ObjectRTISerializer(many=True)
     
     class Meta:
         model = Panel
-        fields = get_fields(Panel, exclude=DEFAULT_FIELDS)+ ['id', 'attached_photograph', 'attached_topography', 'attached_RTI', 'attached_3Dmesh']
+        fields = get_fields(Panel, exclude=DEFAULT_FIELDS)+ ['id', 'attached_photograph', 'attached_topography', 'mesh', 'rti']
         geo_field = 'geometry'
         depth = 1
         
@@ -73,12 +99,6 @@ class PanelGeoSerializer(GeoFeatureModelSerializer):
     
     def get_attached_topography(self, obj):
         return obj.images.filter(published=True).filter(type_of_image__text="Topography").values()
-    
-    def get_attached_RTI(self, obj):
-        return obj.rti.filter(published=True).values()
-    
-    def get_attached_3Dmesh(self, obj):
-        return obj.mesh.filter(published=True).values()
     
     
 class PanelMetadataSerializer(DynamicDepthSerializer):
@@ -170,16 +190,22 @@ class TIFFImageSerializer(DynamicDepthSerializer):
         model = Image
         fields = get_fields(Image, exclude=DEFAULT_FIELDS)+ ['id']
         
-        
-class ObjectRTISerializer(DynamicDepthSerializer):
 
-    class Meta:
-        model = ObjectRTI
-        fields = get_fields(ObjectRTI, exclude=DEFAULT_FIELDS)+ ['id']
-        
-        
 class ObjectMesh3DSerializer(DynamicDepthSerializer):
+    url_for_download = SerializerMethodField()
 
     class Meta:
         model = ObjectMesh3D
-        fields = get_fields(ObjectMesh3D, exclude=DEFAULT_FIELDS)+ ['id']
+        fields = get_fields(ObjectMesh3D, exclude=DEFAULT_FIELDS)+ ['id', 'url_for_download']
+
+    def get_url_for_download(self, obj):
+        # we can access the panel title from here...
+        surface_title = obj.panel.title
+        
+        # ...or from here! Let's implement both right now and choose one to visualize, but we can always revert to the other!
+        location_url = obj.url
+        surface_from_url = (location_url.split('/')[-1]).split('.')[0]
+
+        url_download = f"https://data.dh.gu.se/saintsophia/meshoriginal/{surface_title}.zip"
+        
+        return url_download
