@@ -416,9 +416,11 @@ class Image(abstract.AbstractTIFFImageModel):
         ]
 
 
-class GenericImage(abstract.AbstractTIFFImageModel):
+
+class KorniienkoImage(abstract.AbstractBaseModel):
     title = models.CharField(max_length=256, null=True, blank=True, help_text=_("If possible, same title as the Alternate Title of an Inscription."))
-    inscription = models.ForeignKey(Inscription, null=True, blank=True, on_delete=models.CASCADE, related_name="generic_image_image", verbose_name="Inscription")
+    inscription = models.ForeignKey(Inscription, null=True, blank=True, on_delete=models.CASCADE, related_name="korniienko_image_image", verbose_name="Inscription")
+    url = models.CharField(max_length=1024, null=True, blank=True, verbose_name=_("URL to location in storage"))
     
     author = models.ForeignKey(Author, null=True, blank=True, on_delete=models.SET_NULL, related_name="photo_creator", verbose_name="Author")
     year = models.IntegerField(null=True, blank=True)
@@ -431,7 +433,7 @@ class GenericImage(abstract.AbstractTIFFImageModel):
         PHOTOGRAPH: "Photograph",
         DRAWING: "Drawing"
     }
-    type_of_image = models.CharField(max_length=10, choices=TYPES_OF_IMAGES, default=PHOTOGRAPH)
+    type_of_image = models.IntegerField(max_length=10, choices=TYPES_OF_IMAGES, default=PHOTOGRAPH)
 
     CC0 = 1
     CCBY = 2
@@ -450,14 +452,59 @@ class GenericImage(abstract.AbstractTIFFImageModel):
         CCBYND: "CC BY-ND", 
         CCBYNCND: "CC BY-NC-ND"
     }
-    type_of_license = models.CharField(max_length=12, choices=LICENSES, default=CCBYNC)
+
+    type_of_license = models.IntegerField(max_length=12, choices=LICENSES, default=CCBYNC)
 
     def __str__(self) -> str:
         return f"{self.type_of_image} attached to inscription {self.inscription.title}"
 
     class Meta:
-        verbose_name = _("Generic Image")
-        verbose_name_plural = _("Generic Images")
+        verbose_name = _("Korniienko Image")
+        verbose_name_plural = _("Korniienko Images")
+
+
+# class GenericImage(abstract.AbstractTIFFImageModel):
+#     title = models.CharField(max_length=256, null=True, blank=True, help_text=_("If possible, same title as the Alternate Title of an Inscription."))
+#     inscription = models.ForeignKey(Inscription, null=True, blank=True, on_delete=models.CASCADE, related_name="generic_image_image", verbose_name="Inscription")
+    
+#     author = models.ForeignKey(Author, null=True, blank=True, on_delete=models.SET_NULL, related_name="photo_creator", verbose_name="Author")
+#     year = models.IntegerField(null=True, blank=True)
+#     bibliography = models.ForeignKey(BibliographyItem, null=True, blank=True, on_delete=models.SET_NULL, related_name="photo_bibliography", verbose_name="Bibliographic reference")
+#     plate = models.IntegerField(null=True)
+
+#     PHOTOGRAPH = 1
+#     DRAWING = 2
+#     TYPES_OF_IMAGES = {
+#         PHOTOGRAPH: "Photograph",
+#         DRAWING: "Drawing"
+#     }
+#     type_of_image = models.CharField(max_length=10, choices=TYPES_OF_IMAGES, default=PHOTOGRAPH)
+
+#     CC0 = 1
+#     CCBY = 2
+#     CCBYSA = 3
+#     CCBYNC = 4
+#     CCBYNCSA = 6
+#     CCBYND = 6
+#     CCBYNCND = 7
+
+#     LICENSES = {
+#         CC0: "CC0", 
+#         CCBY: "CC BY",
+#         CCBYSA: "CC BY-SA",
+#         CCBYNC: "CC BY-NC",
+#         CCBYNCSA: "CC BY-NC-SA", 
+#         CCBYND: "CC BY-ND", 
+#         CCBYNCND: "CC BY-NC-ND"
+#     }
+#     type_of_license = models.CharField(max_length=12, choices=LICENSES, default=CCBYNC)
+
+#     def __str__(self) -> str:
+#         return f"{self.type_of_image} attached to inscription {self.inscription.title}"
+
+#     class Meta:
+#         verbose_name = _("Generic Image")
+#         verbose_name_plural = _("Generic Images")
 
         
 class ObjectRTI(abstract.AbstractBaseModel):
