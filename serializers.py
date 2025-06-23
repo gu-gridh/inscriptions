@@ -85,12 +85,12 @@ class MeshFromPanelSerializer(DynamicDepthSerializer):
 class PanelGeoSerializer(GeoFeatureModelSerializer):
     attached_photograph = SerializerMethodField()
     attached_topography = SerializerMethodField()
-    mesh = MeshFromPanelSerializer(many=True)
-    rti = ObjectRTISerializer(many=True)
+    attached_3Dmesh = MeshFromPanelSerializer(many=True)
+    attached_RTI = ObjectRTISerializer(many=True)
     
     class Meta:
         model = Panel
-        fields = get_fields(Panel, exclude=DEFAULT_FIELDS)+ ['id', 'attached_photograph', 'attached_topography', 'mesh', 'rti']
+        fields = get_fields(Panel, exclude=DEFAULT_FIELDS)+ ['id', 'attached_photograph', 'attached_topography', 'attached_3Dmesh', 'attached_RTI']
         geo_field = 'geometry'
         depth = 1
         
