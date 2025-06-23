@@ -146,7 +146,7 @@ class PanelAdmin(LeafletGeoAdmin, admin.ModelAdmin):
 class InscriptionAdmin(admin.ModelAdmin,):
     filter_horizontal = ['tags', 'genre', 'author', 'condition', 'alignment', 'extra_alphabetical_sign', 'bibliography', 'mentioned_person', 'dating_criteria']
     list_display = ['panel', 'id', 'language', 'title']
-    search_fields = ['id', 'language__text', 'panel__title']
+    search_fields = ['title', 'id', 'language__text', 'panel__title']
     autocomplete_fields = ['panel', 'inscriber']
 
     change_form_template = 'apps/inscriptions/inscription_change_form.html'
