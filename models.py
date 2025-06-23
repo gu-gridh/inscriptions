@@ -439,7 +439,7 @@ class KorniienkoImage(abstract.AbstractBaseModel):
     CCBY = 2
     CCBYSA = 3
     CCBYNC = 4
-    CCBYNCSA = 6
+    CCBYNCSA = 5
     CCBYND = 6
     CCBYNCND = 7
 
