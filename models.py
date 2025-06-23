@@ -433,7 +433,7 @@ class KorniienkoImage(abstract.AbstractBaseModel):
         PHOTOGRAPH: "Photograph",
         DRAWING: "Drawing"
     }
-    type_of_image = models.IntegerField(max_length=10, choices=TYPES_OF_IMAGES, default=PHOTOGRAPH)
+    type_of_image = models.IntegerField(choices=TYPES_OF_IMAGES, default=PHOTOGRAPH)
 
     CC0 = 1
     CCBY = 2
@@ -453,7 +453,7 @@ class KorniienkoImage(abstract.AbstractBaseModel):
         CCBYNCND: "CC BY-NC-ND"
     }
 
-    type_of_license = models.IntegerField(max_length=12, choices=LICENSES, default=CCBYNC)
+    type_of_license = models.IntegerField(choices=LICENSES, default=CCBYNC)
 
     def __str__(self) -> str:
         return f"{self.type_of_image} attached to inscription {self.inscription.title}"
