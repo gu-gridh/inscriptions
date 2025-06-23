@@ -385,7 +385,7 @@ class PanelOrInscription(models.IntegerChoices):
     
 
 class Image(abstract.AbstractTIFFImageModel):
-    panel_or_inscription = models.IntegerField(choices=PanelOrInscription.choices, verbose_name=_("Surface or inscription"))
+    panel_or_inscription = models.IntegerField(choices=PanelOrInscription.choices, default=1, verbose_name=_("Surface or inscription"))
     panel = models.ForeignKey(Panel, null=True, blank=True, on_delete=models.CASCADE, related_name="images", verbose_name=_("Surface"))
     inscription = models.ForeignKey(Inscription, null=True, blank=True, on_delete=models.CASCADE, related_name="inscription")
     
