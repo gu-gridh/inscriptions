@@ -162,10 +162,11 @@ class PanelCoordinatesSerializer(GeoFeatureModelSerializer):
 class InscriptionSerializer(DynamicDepthSerializer):
     
     inscription_iiif_url = SerializerMethodField()
+    korniienko_images = SerializerMethodField()
 
     class Meta:
         model = Inscription
-        fields = get_fields(Inscription, exclude=DEFAULT_FIELDS)+ ['id', 'inscription_iiif_url']
+        fields = get_fields(Inscription, exclude=DEFAULT_FIELDS)+ ['id', 'inscription_iiif_url', 'korniienko_images']
         
     def get_inscription_iiif_url(self, obj):
         images = obj.panel.images.filter(type_of_image=1).values() # 1 is orthophotos
@@ -175,6 +176,11 @@ class InscriptionSerializer(DynamicDepthSerializer):
             url = f"https://img.dh.gu.se/saintsophia/static/{images[0]['iiif_file']}/{obj.position_on_surface}/"
         
         return url
+
+    def get_korniienko_images(self, obj):
+        images = obj.korniienko_image_image.values()
+
+        return images
 
 
 class InscriptionTagsSerializer(DynamicDepthSerializer):

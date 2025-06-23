@@ -177,7 +177,6 @@ class KorniienkoImageAdmin(admin.ModelAdmin):
     search_fields = ['inscription__title', 'type_of_image__text', 'url']
     
 
-
 @admin.register(ObjectRTI)
 class ObjectRTIAdmin(admin.ModelAdmin):
     autocomplete_fields = ['panel']
