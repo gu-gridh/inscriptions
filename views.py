@@ -54,7 +54,13 @@ class TagsWithDataViewSet(DynamicDepthViewSet):
 class GenreDataViewSet(DynamicDepthViewSet):
     queryset = models.Genre.objects.all().filter(Q(inscriptions__isnull=False)).order_by('text').distinct()
     serializer_class = serializers.GenreSerializer
-    filterset_fields = get_fields(models.Tag, exclude=DEFAULT_FIELDS)
+    filterset_fields = get_fields(models.Genre, exclude=DEFAULT_FIELDS)
+
+
+class BibliographyItemViewSet(DynamicDepthViewSet):
+    queryset = models.BibliographyItem.objects.all().order_by('year')
+    serializer_class = serializers.BibliographyItemSerializer
+    filterset_fields = get_fields(models.BibliographyItem, exclude=DEFAULT_FIELDS)
 
 
 class ContributorsViewSet(DynamicDepthViewSet):
@@ -372,20 +378,10 @@ class IIIFImageViewSet(DynamicDepthViewSet):
         return queryset
     
 
-# class KorniienkoImageViewSet(DynamicDepthViewSet):
-#     """
-#     retrieve:
-#     Returns a single image instance.
-
-#     list:
-#     Returns a list of all the existing images in the database, paginated.
-
-#     count:
-#     Returns a count of the existing images after the application of any filter.
-#     """
-#     queryset = models.KorniienkoImage.objects.all().order_by('id')
-#     serializer_class = serializers.KorniienkoImageSerializer
-#     filterset_fields = get_fields(models.KorniienkoImage, exclude=DEFAULT_FIELDS)
+class KorniienkoImageViewSet(DynamicDepthViewSet):
+    queryset = models.KorniienkoImage.objects.all().order_by('id')
+    serializer_class = serializers.KorniienkoImageSerializer
+    filterset_fields = get_fields(models.KorniienkoImage, exclude=DEFAULT_FIELDS)
     
     
 class ObjectRTIViewSet(DynamicDepthViewSet):

@@ -31,6 +31,14 @@ class HistoricalPersonSerializer(DynamicDepthSerializer):
         fields = get_fields(HistoricalPerson, exclude=DEFAULT_FIELDS) + ['id']
 
 
+class BibliographyItemSerializer(DynamicDepthSerializer):
+    
+    class Meta:
+        model = BibliographyItem
+        fields = get_fields(BibliographyItem, exclude=DEFAULT_FIELDS)+ ['id']
+        depth = 1
+
+
 class PanelSerializer(DynamicDepthSerializer):
 
     list_of_languages = SerializerMethodField()
@@ -158,15 +166,22 @@ class PanelCoordinatesSerializer(GeoFeatureModelSerializer):
     def get_number_of_inscriptions(self, obj):
         return obj.inscriptions.count()
         
-        
+
+class KorniienkoImageSerializer(DynamicDepthSerializer):
+    class Meta:
+        model = KorniienkoImage
+        fields = get_fields(KorniienkoImage, exclude=DEFAULT_FIELDS)+ ['id']
+        depth = 2
+
+
 class InscriptionSerializer(DynamicDepthSerializer):
     
     inscription_iiif_url = SerializerMethodField()
-    korniienko_images = SerializerMethodField()
+    korniienko_image = KorniienkoImageSerializer(many = True)
 
     class Meta:
         model = Inscription
-        fields = get_fields(Inscription, exclude=DEFAULT_FIELDS)+ ['id', 'inscription_iiif_url', 'korniienko_images']
+        fields = get_fields(Inscription, exclude=DEFAULT_FIELDS)+ ['id', 'inscription_iiif_url', 'korniienko_image']
         
     def get_inscription_iiif_url(self, obj):
         images = obj.panel.images.filter(type_of_image=1).values() # 1 is orthophotos
@@ -176,11 +191,6 @@ class InscriptionSerializer(DynamicDepthSerializer):
             url = f"https://img.dh.gu.se/saintsophia/static/{images[0]['iiif_file']}/{obj.position_on_surface}/"
         
         return url
-
-    def get_korniienko_images(self, obj):
-        images = obj.korniienko_image_image.values()
-
-        return images
 
 
 class InscriptionTagsSerializer(DynamicDepthSerializer):

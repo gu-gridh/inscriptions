@@ -154,6 +154,7 @@ class WritingSystem(abstract.AbstractTagModel):
     def __repr__(self) -> str:
         return str(self)
 
+
 class Medium(abstract.AbstractTagModel):
     text_ukr = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("? (укр)"))
     uniform_resource_identifier = models.URLField(blank=True, null=True)
@@ -341,7 +342,7 @@ class Inscription(abstract.AbstractBaseModel):
     extra_alphabetical_sign = models.ManyToManyField(ExtraAlphabeticalSign, blank=True, verbose_name=_("Extra-alphabetical signs"))
     
     # bibliography and contributions
-    bibliography = models.ManyToManyField(BibliographyItem, blank=True, help_text=_("Add bibliography items"))
+    bibliography = models.ManyToManyField(BibliographyItem, blank=True, help_text=_("Add bibliography items"), related_name="inscriptions")
     author = models.ManyToManyField(Author, blank=True, verbose_name=_("Contributors"), help_text=_("List of authors for this inscription"))
     
     
@@ -419,7 +420,7 @@ class Image(abstract.AbstractTIFFImageModel):
 
 class KorniienkoImage(abstract.AbstractBaseModel):
     title = models.CharField(max_length=256, null=True, blank=True, help_text=_("If possible, same title as the Alternate Title of an Inscription."))
-    inscription = models.ForeignKey(Inscription, null=True, blank=True, on_delete=models.CASCADE, related_name="korniienko_image_image", verbose_name="Inscription")
+    inscription = models.ForeignKey(Inscription, null=True, blank=True, on_delete=models.CASCADE, related_name="korniienko_image", verbose_name="Inscription")
     url = models.CharField(max_length=1024, null=True, blank=True, verbose_name=_("URL to location in storage"))
     
     author = models.ForeignKey(Author, null=True, blank=True, on_delete=models.SET_NULL, related_name="photo_creator", verbose_name="Author")

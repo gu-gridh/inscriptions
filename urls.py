@@ -19,7 +19,7 @@ router.register(rf'{endpoint}/coordinates', views.PanelCoordinatesViewSet, basen
 router.register(rf'{endpoint}/info/panels', views.PanelInfoViewSet, basename='panels info')
 router.register(rf'{endpoint}/panel-string', views.PanelStringViewSet, basename='panels beginning by string')
 router.register(rf'{endpoint}/image', views.IIIFImageViewSet, basename='image')
-# router.register(rf'{endpoint}/korniienko-image', views.KornienkoImageViewSet, basename="korniienko image")
+router.register(rf'{endpoint}/korniienko-image', views.KorniienkoImageViewSet, basename="korniienko image")
 router.register(rf'{endpoint}/object-rti', views.ObjectRTIViewSet, basename='object RTI')
 router.register(rf'{endpoint}/object-mesh-3d', views.ObjectMesh3DViewSet, basename='object Mesh 3D')
 router.register(rf'{endpoint}/inscription', views.InscriptionViewSet, basename='inscription')
@@ -32,6 +32,8 @@ router.register(rf'{endpoint}/genre-with-data', views.GenreDataViewSet, basename
 router.register(rf'{endpoint}/writing-system-with-data', views.WritingSystemWithDataViewSet, basename="writing system with data attached")
 router.register(rf'{endpoint}/language-with-data', views.LanguageWithDataViewSet, basename="language with data attached")
 router.register(rf'{endpoint}/inscriptions-info', views.DataWidgetViewSet, basename="data for widget")
+router.register(rf'{endpoint}/bibliography-item', views.BibliographyItemViewSet, basename="bibliography items")
+
 
 urlpatterns = [
     path('', include(router.urls)),
