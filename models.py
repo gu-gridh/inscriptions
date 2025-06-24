@@ -427,33 +427,25 @@ class KorniienkoImage(abstract.AbstractBaseModel):
     bibliography = models.ForeignKey(BibliographyItem, null=True, blank=True, on_delete=models.SET_NULL, related_name="photo_bibliography", verbose_name="Bibliographic reference")
     plate = models.IntegerField(null=True)
 
-    PHOTOGRAPH = 1
-    DRAWING = 2
+    PHOTOGRAPH = "Photograph"
+    DRAWING = "Drawing"
     TYPES_OF_IMAGES = {
         PHOTOGRAPH: "Photograph",
         DRAWING: "Drawing"
     }
-    type_of_image = models.IntegerField(choices=TYPES_OF_IMAGES, default=PHOTOGRAPH)
-
-    CC0 = 1
-    CCBY = 2
-    CCBYSA = 3
-    CCBYNC = 4
-    CCBYNCSA = 5
-    CCBYND = 6
-    CCBYNCND = 7
+    type_of_image = models.CharField(choices=TYPES_OF_IMAGES, default=PHOTOGRAPH)
 
     LICENSES = {
-        CC0: "CC0", 
-        CCBY: "CC BY",
-        CCBYSA: "CC BY-SA",
-        CCBYNC: "CC BY-NC",
-        CCBYNCSA: "CC BY-NC-SA", 
-        CCBYND: "CC BY-ND", 
-        CCBYNCND: "CC BY-NC-ND"
+        "CC0": "CC0", 
+        "CC BY": "CC BY",
+        "CC BY-SA": "CC BY-SA",
+        "CC BY-NC": "CC BY-NC",
+        "CC BY-NC-SA": "CC BY-NC-SA", 
+        "CC BY-ND": "CC BY-ND", 
+        "CC BY-NC-ND": "CC BY-NC-ND"
     }
 
-    type_of_license = models.IntegerField(choices=LICENSES, default=CCBYNC)
+    type_of_license = models.CharField(choices=LICENSES, default="CC BY-NC")
 
     def __str__(self) -> str:
         return f"{self.type_of_image} attached to inscription {self.inscription.title}"
