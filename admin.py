@@ -174,7 +174,7 @@ class KorniienkoImageAdmin(admin.ModelAdmin):
     readonly_fields= [*DEFAULT_FIELDS]
     autocomplete_fields = ['inscription']
     list_display = ['inscription', 'type_of_image']
-    search_fields = ['inscription__title', 'type_of_image__text', 'url']
+    search_fields = ['inscription__title', 'url']
     
 
 @admin.register(ObjectRTI)
