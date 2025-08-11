@@ -3,24 +3,18 @@ import os
 from datetime import datetime
 from django.core.management.base import BaseCommand
 from django.db.models import Q
-from django.utils import timezone
 from apps.inscriptions.models import Inscription
 
 
 class Command(BaseCommand):
-    help = 'Export inscriptions to CSV where at least one graffiti data field is not empty'
+    help = 'Export inscriptions to CSV where transcription field is not empty'
 
     def add_arguments(self, parser):
         parser.add_argument(
             '--output',
             type=str,
             default=None,
-            help='Output file path (default: inscriptions_with_graffiti_data_TIMESTAMP.csv)'
-        )
-        parser.add_argument(
-            '--include-empty-text-fields',
-            action='store_true',
-            help='Include inscriptions with empty text fields but with related objects (mentioned_person, inscriber)'
+            help='Output file path (default: inscriptions_with_transcription_TIMESTAMP.csv)'
         )
 
     def handle(self, *args, **options):
@@ -29,35 +23,10 @@ class Command(BaseCommand):
             output_file = options['output']
         else:
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            output_file = f'inscriptions_with_graffiti_data_{timestamp}.csv'
+            output_file = f'inscriptions_with_transcription_{timestamp}.csv'
 
-        # Build query to filter inscriptions with non-empty graffiti data fields
-        # Graffiti data fields from the model:
-        # - transcription (RichTextField)
-        # - interpretative_edition (RichTextField) 
-        # - romanisation (RichTextField)
-        # - mentioned_person (ManyToManyField)
-        # - inscriber (ForeignKey)
-        # - translation_eng (RichTextField)
-        # - translation_ukr (RichTextField)
-        # - comments_eng (RichTextField)
-        # - comments_ukr (RichTextField)
-
-        query = Q()
-        
-        # Add conditions for text fields (not null and not empty string)
-        text_fields = [
-            'transcription', 'interpretative_edition', 'romanisation',
-            'translation_eng', 'translation_ukr', 'comments_eng', 'comments_ukr'
-        ]
-        
-        for field in text_fields:
-            query |= Q(**{f'{field}__isnull': False}) & ~Q(**{f'{field}__exact': ''})
-
-        # Add conditions for related fields if include-empty-text-fields is True
-        if options['include_empty_text_fields']:
-            query |= Q(mentioned_person__isnull=False)
-            query |= Q(inscriber__isnull=False)
+        # Build query to filter inscriptions with non-empty transcription field only
+        query = Q(transcription__isnull=False) & ~Q(transcription__exact='')
 
         # Get inscriptions matching the criteria
         inscriptions = Inscription.objects.filter(query).distinct().prefetch_related(
@@ -66,7 +35,7 @@ class Command(BaseCommand):
             'condition', 'alignment', 'extra_alphabetical_sign', 'bibliography', 'author'
         )
 
-        self.stdout.write(f'Found {inscriptions.count()} inscriptions with graffiti data')
+        self.stdout.write(f'Found {inscriptions.count()} inscriptions with transcription data')
 
         # Define CSV headers
         headers = [
