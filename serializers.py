@@ -90,11 +90,30 @@ class MeshFromPanelSerializer(DynamicDepthSerializer):
         return url_download
 
 
+class RTIFromPanelSerializer(DynamicDepthSerializer):
+    url_for_download = SerializerMethodField()
+
+    class Meta:
+        model = ObjectRTI
+        fields = get_fields(ObjectRTI, exclude=DEFAULT_FIELDS) + ['id', 'url_for_download']
+
+    def get_url_for_download(self, obj):
+        # we can access the panel title from here...
+        surface_title = obj.panel.title
+        # ...or from here! Let's implement both right now and choose one to visualize, but we can always revert to the other!
+        location_url = obj.url
+        surface_from_url = (location_url.split('/')[-1]).split('.')[0]
+
+        url_download = f"https://data.dh.gu.se/saintsophia/rti/{surface_from_url}.zip"
+        
+        return url_download
+
+
 class PanelGeoSerializer(GeoFeatureModelSerializer):
     attached_photograph = SerializerMethodField()
     attached_topography = SerializerMethodField()
     attached_3Dmesh = MeshFromPanelSerializer(many=True)
-    attached_RTI = ObjectRTISerializer(many=True)
+    attached_RTI = RTIFromPanelSerializer(many=True) # ObjectRTISerializer(many=True)
     
     class Meta:
         model = Panel

@@ -457,6 +457,7 @@ class KorniienkoImage(abstract.AbstractBaseModel):
 
         
 class ObjectRTI(abstract.AbstractBaseModel):
+    is_downloadable = models.BooleanField(verbose_name=_("Downloadable"), default=True)
     title = models.CharField(max_length=256, blank=True, null=True, verbose_name=_("name of the RTI object"))
     url = models.CharField(max_length=1024, blank=True, null=True, verbose_name=_("URL to location in storage"))
     panel = models.ForeignKey(Panel, null=True, blank=True, on_delete=models.CASCADE, related_name="attached_RTI", verbose_name=_("Surface"))
