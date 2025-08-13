@@ -102,7 +102,7 @@ class RTIFromPanelSerializer(DynamicDepthSerializer):
         surface_title = obj.panel.title
         # ...or from here! Let's implement both right now and choose one to visualize, but we can always revert to the other!
         location_url = obj.url
-        surface_from_url = (location_url.split('/')[-1]).split('.')[0]
+        surface_from_url = (location_url.split('/')[-2])
 
         url_download = f"https://data.dh.gu.se/saintsophia/rti/{surface_from_url}.zip"
         
