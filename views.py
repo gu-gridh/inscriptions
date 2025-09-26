@@ -638,10 +638,10 @@ class SummaryViewSet(DynamicDepthViewSet):
             for entry in textual_genre_counts if entry["genre__text"]
         ]
 
-        summary["pictorial_description_genre"] = [
+        summary["pictorial_description"] = [
             {
                 "pictorial_description": entry["tags__text"], 
-                "pictorial_description": entry["tags__text_ukr"],
+                "pictorial_description_ukr": entry["tags__text_ukr"],
                 "count": entry["count"]}
             for entry in pictorial_description_counts if entry["tags__text"]
         ]
