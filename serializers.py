@@ -244,3 +244,10 @@ class ObjectMesh3DSerializer(DynamicDepthSerializer):
         url_download = f"https://data.dh.gu.se/saintsophia/meshoriginal/{surface_title}.zip"
         
         return url_download
+
+
+class SummarySerializer(DynamicDepthSerializer):
+
+    class Meta:
+        model = Inscription
+        fields = ['id']+get_fields(Inscription, exclude=['created_at', 'updated_at', 'inscription_iiif_url', 'korniienko_image'])

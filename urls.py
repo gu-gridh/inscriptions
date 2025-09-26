@@ -33,6 +33,7 @@ router.register(rf'{endpoint}/writing-system-with-data', views.WritingSystemWith
 router.register(rf'{endpoint}/language-with-data', views.LanguageWithDataViewSet, basename="language with data attached")
 router.register(rf'{endpoint}/inscriptions-info', views.DataWidgetViewSet, basename="data for widget")
 router.register(rf'{endpoint}/bibliography-item', views.BibliographyItemViewSet, basename="bibliography items")
+router.register(rf'{endpoint}/summary', views.SummaryViewSet, basename="data summary")
 
 
 urlpatterns = [

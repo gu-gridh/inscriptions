@@ -1,6 +1,6 @@
 from unittest.mock import DEFAULT
 from . import models, serializers
-from django.db.models import Q, Value, Case, When
+from django.db.models import Q, Value, Case, When, Count
 from saintsophia.abstract.views import DynamicDepthViewSet, GeoViewSet
 from saintsophia.abstract.models import get_fields, DEFAULT_FIELDS
 from django.http import HttpResponse
@@ -480,3 +480,165 @@ class DataWidgetViewSet(DynamicDepthViewSet):
         }
 
         return HttpResponse(json.dumps(data))
+
+
+
+
+
+class SummaryViewSet(DynamicDepthViewSet):
+    """A separate viewset to return summary data for inscriptions."""
+    queryset = models.Inscription.objects.filter(published=True)
+    serializer_class = serializers.SummarySerializer
+    filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
+    filterset_fields = ['id'] + get_fields(models.Inscription, exclude=DEFAULT_FIELDS + ['inscription_iiif_url', 'korniienko_image'])
+
+    # def get_queryset(self):
+    #     params = self.request.GET
+    #     operator = params.get("operator", "OR")
+    #     search_type = params.get("search_type")
+    #     category_type = params.get("category_type")
+
+    #     queryset = models.Inscription.objects.filter(published=True)
+
+    #     if category_type:
+    #         queryset = queryset.filter(type__text__iexact=category_type)
+
+    #     # Apply search filters using new structure
+    #     search_struct = self.build_search_query(params, search_type, operator)
+    #     for q_part in search_struct["chain_filters"]:
+    #         queryset = queryset.filter(q_part)
+    #     if search_struct["single_q"]:
+    #         queryset = queryset.filter(search_struct["single_q"])
+
+    #     queryset = self.apply_bbox_filter(queryset, params.get("in_bbox"))
+    #     return queryset.distinct().order_by('type__order', 'id')
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        # Generate summary BEFORE pagination
+        summary_data = self.summarize_results(queryset)
+        
+        return Response(summary_data)
+
+    # # TODO CONTINUE WORKING FROM HERE
+
+    def summarize_results(self, queryset):
+        """Summarizes search results by creator and institution."""
+        # we should add Summarise search results by geographic data too: TODO
+        # Summarise by ADM0, ADM1, ADM2, socken, kommun, landskap/län: TODO
+        # motif: Two level summary with keyword categories and subcategories: Done
+        # Count of documentation types by site: Done
+        # Show number of images for each year: Done
+        # Summarise search results by creator and institution : Done
+
+        # summary = {
+        #     "creators": [],
+        #     "institutions": [],
+        #     "year": [],
+        #     "types": [],
+        #     "motifs": [],
+        #     "geographic": [],
+        #     "site": []
+        # }
+
+        summary = {
+            "type_of_inscription": [],
+            "writing_system": [],
+            "language": [],
+            "textual_genre": [],
+            "pictorial_description": [],
+            "min_year": [],
+            "max_year": [],
+        }
+
+        # Count images per creator
+        type_of_inscription_counts = (
+            queryset
+            .values("type_of_inscription__text")
+            .annotate(count=Count("id", distinct=True))
+            .order_by("-count")
+        )
+
+        # Count images per institution
+        writing_system_counts = (
+            queryset
+            .values("writing_system__text")
+            .annotate(count=Count("id", distinct=True))
+            .order_by("-count")
+        )
+        # Count of documentation types by site
+        language_counts = (
+            queryset
+            .values("language__text")
+            .annotate(count=Count("id", distinct=True))
+            .order_by("-count")
+        )
+        # Summarise search results by motif type
+        textual_genre_counts = (
+            queryset
+            .values("genre__text")
+            .annotate(count=Count("id", distinct=True))
+            .order_by("-count")
+        )
+        # Show number of images for each year 
+        pictorial_description_counts = (
+            queryset
+            .values("tags__text")
+            .annotate(count=Count("id", distinct=True))
+            .order_by("-count")
+        )
+
+        min_year_counts = (
+            queryset
+            .values("min_year")
+            .annotate(count=Count("id", distinct=True))
+            .order_by("-count")
+        )
+        max_year_counts = (
+            queryset
+            .values("max_year")
+            .annotate(count=Count("id", distinct=True))
+            .order_by("-count")
+        )
+
+        # Gorgraphic summary can be a json object with counts for each level of geographic data
+        # ADM0, ADM1, ADM2, socken, kommun, landskap/län
+    
+        # Format summary
+        summary["type_of_inscription"] = [
+            {"type": entry["type_of_inscription__text"], "count": entry["count"]}
+            for entry in type_of_inscription_counts if entry["type_of_inscription__text"]
+        ]
+
+        summary["writing_system"] = [
+            {"writing_system": entry["writing_system__text"], "count": entry["count"]}
+            for entry in writing_system_counts if entry["writing_system__text"]
+        ]   
+
+        summary["language"] = [
+            {"language": entry["language__text"], "count": entry["count"]}
+            for entry in language_counts if entry["language__text"]
+        ]
+
+        # In the summarize_results method, replace the motifs section with:
+        summary["textual_genre"] = [
+            {"textual_genre": entry["genre__text"], "count": entry["count"]}
+            for entry in textual_genre_counts if entry["genre__text"]
+        ]
+
+        summary["pictorial_description_genre"] = [
+            {"pictorial_descrioption": entry["tags__text"], "count": entry["count"]}
+            for entry in pictorial_description_counts if entry["tags__text"]
+        ]
+
+        summary["min_year"] = [
+            {"min_year": entry["min_year"], "count": entry["count"]}
+            for entry in min_year_counts if entry["min_year"]
+        ]
+
+        summary["max_year"] = [
+            {"max_year": entry["max_year"], "count": entry["count"]}
+            for entry in max_year_counts if entry["max_year"]
+        ]
+
+        return summary
