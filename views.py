@@ -554,7 +554,7 @@ class SummaryViewSet(DynamicDepthViewSet):
         # Count images per creator
         type_of_inscription_counts = (
             queryset
-            .values("type_of_inscription__text")
+            .values("type_of_inscription__text", "type_of_inscription__text_ukr")
             .annotate(count=Count("id", distinct=True))
             .order_by("-count")
         )
@@ -562,28 +562,28 @@ class SummaryViewSet(DynamicDepthViewSet):
         # Count images per institution
         writing_system_counts = (
             queryset
-            .values("writing_system__text")
+            .values("writing_system__text", "writing_system__text_ukr")
             .annotate(count=Count("id", distinct=True))
             .order_by("-count")
         )
         # Count of documentation types by site
         language_counts = (
             queryset
-            .values("language__text")
+            .values("language__text", "language__text_ukr")
             .annotate(count=Count("id", distinct=True))
             .order_by("-count")
         )
         # Summarise search results by motif type
         textual_genre_counts = (
             queryset
-            .values("genre__text")
+            .values("genre__text", "genre__text_ukr")
             .annotate(count=Count("id", distinct=True))
             .order_by("-count")
         )
         # Show number of images for each year 
         pictorial_description_counts = (
             queryset
-            .values("tags__text")
+            .values("tags__text", "tags__text_ukr")
             .annotate(count=Count("id", distinct=True))
             .order_by("-count")
         )
@@ -606,28 +606,43 @@ class SummaryViewSet(DynamicDepthViewSet):
     
         # Format summary
         summary["type_of_inscription"] = [
-            {"type": entry["type_of_inscription__text"], "count": entry["count"]}
+            {
+                "type": entry["type_of_inscription__text"], 
+                "type_ukr": entry["type_of_inscription__text_ukr"], 
+                "count": entry["count"]}
             for entry in type_of_inscription_counts if entry["type_of_inscription__text"]
         ]
 
         summary["writing_system"] = [
-            {"writing_system": entry["writing_system__text"], "count": entry["count"]}
+            {
+                "writing_system": entry["writing_system__text"], 
+                "writing_system_ukr": entry["writing_system__text_ukr"],
+                "count": entry["count"]}
             for entry in writing_system_counts if entry["writing_system__text"]
         ]   
 
         summary["language"] = [
-            {"language": entry["language__text"], "count": entry["count"]}
+            {
+                "language": entry["language__text"], 
+                "language_ukr": entry["language__text_ukr"],
+                "count": entry["count"]}
             for entry in language_counts if entry["language__text"]
         ]
 
         # In the summarize_results method, replace the motifs section with:
         summary["textual_genre"] = [
-            {"textual_genre": entry["genre__text"], "count": entry["count"]}
+            {
+                "textual_genre": entry["genre__text"], 
+                "textual_genre_ukr": entry["genre__text_ukr"],
+                "count": entry["count"]}
             for entry in textual_genre_counts if entry["genre__text"]
         ]
 
         summary["pictorial_description_genre"] = [
-            {"pictorial_descrioption": entry["tags__text"], "count": entry["count"]}
+            {
+                "pictorial_description": entry["tags__text"], 
+                "pictorial_description": entry["tags__text_ukr"],
+                "count": entry["count"]}
             for entry in pictorial_description_counts if entry["tags__text"]
         ]
 
