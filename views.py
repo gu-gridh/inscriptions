@@ -1,6 +1,7 @@
 from unittest.mock import DEFAULT
 from . import models, serializers
-from django.db.models import Q, Value, Case, When, Count
+from django.db.models import Q, Value, Case, When, Count, F, IntegerField
+from django.db.models.functions import Cast
 from saintsophia.abstract.views import DynamicDepthViewSet, GeoViewSet
 from saintsophia.abstract.models import get_fields, DEFAULT_FIELDS
 from django.http import HttpResponse
@@ -549,6 +550,7 @@ class SummaryViewSet(DynamicDepthViewSet):
             "pictorial_description": [],
             "min_year": [],
             "max_year": [],
+            "avg_year": [],
         }
 
         # Count images per creator
@@ -599,6 +601,18 @@ class SummaryViewSet(DynamicDepthViewSet):
             .values("max_year")
             .annotate(count=Count("id", distinct=True))
             .order_by("-count")
+        )
+
+        # Calculate average year and group by it
+        avg_year_counts = (
+            queryset
+            .filter(min_year__isnull=False, max_year__isnull=False)  # Only include records with both years
+            .annotate(
+                avg_year=Cast((F('min_year') + F('max_year')) / 2, IntegerField())
+            )
+            .values("avg_year")
+            .annotate(count=Count("id", distinct=True))
+            .order_by("avg_year")
         )
 
         # Gorgraphic summary can be a json object with counts for each level of geographic data
@@ -654,6 +668,11 @@ class SummaryViewSet(DynamicDepthViewSet):
         summary["max_year"] = [
             {"max_year": entry["max_year"], "count": entry["count"]}
             for entry in max_year_counts if entry["max_year"]
+        ]
+
+        summary["avg_year"] = [
+            {"avg_year": entry["avg_year"], "count": entry["count"]}
+            for entry in avg_year_counts if entry["avg_year"] is not None
         ]
 
         return summary
