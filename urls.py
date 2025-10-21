@@ -6,7 +6,8 @@ import saintsophia.utils as utils
 
 router = routers.DefaultRouter()
 endpoint = utils.build_app_endpoint("inscriptions")
-documentation = utils.build_app_api_documentation("inscriptions", endpoint)
+documentation = utils.build_app_api_documentation()
+
 
 router.register(rf'{endpoint}/tags', views.TagViewSet, basename="tags")
 router.register(rf'{endpoint}/language', views.LanguageViewSet, basename='languages')
