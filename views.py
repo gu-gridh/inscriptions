@@ -66,6 +66,7 @@ class BibliographyItemViewSet(DynamicDepthViewSet):
 
 class ContributorsViewSet(DynamicDepthViewSet):
     queryset = models.Inscription.objects.all()
+    serializer_class = serializers.InscriptionSerializer
     filterset_fields = get_fields(models.Inscription, exclude=DEFAULT_FIELDS)
     
     def list(self, request):
@@ -147,7 +148,7 @@ class PanelCoordinatesViewSet(GeoViewSet):
     
     
 class PanelInfoViewSet(DynamicDepthViewSet):
-
+    queryset = models.Panel.objects.all()  
     serializer_class = serializers.PanelMetadataSerializer
 
     def list(self, request):
@@ -225,6 +226,7 @@ class InscriptionViewSet(DynamicDepthViewSet):
 
 class InscriptionTagsViewSet(DynamicDepthViewSet):
     queryset = models.Inscription.objects.all().order_by('id')
+    serializer_class = serializers.InscriptionSerializer  # Add this line
     filterset_fields = get_fields(models.Inscription, exclude=DEFAULT_FIELDS+['pixels'])
     
     def list(self, request):
@@ -287,6 +289,7 @@ class InscriptionStringViewSet(DynamicDepthViewSet):
     
 class AnnotationViewSet(DynamicDepthViewSet):
     queryset = models.Inscription.objects.all().order_by('id')
+    serializer_class = serializers.InscriptionSerializer
     filterset_fields = get_fields(models.Inscription, exclude=DEFAULT_FIELDS+['pixels'])
     
     def list(self, request):
@@ -398,7 +401,7 @@ class ObjectMesh3DViewSet(DynamicDepthViewSet):
 
 
 class DataWidgetViewSet(DynamicDepthViewSet):
-
+    queryset = models.Inscription.objects.all()
     serializer_class = serializers.InscriptionSerializer
 
     def list(self, request):
