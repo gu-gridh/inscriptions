@@ -609,7 +609,7 @@ class SummaryViewSet(DynamicDepthViewSet):
         # Calculate average year and group by it
         avg_year_counts = (
             queryset
-            .filter(min_year__isnull=False, max_year__isnull=False)  # Only include records with both years
+            .filter(min_year__isnull=False, max_year__isnull=False, max_year__lte=200+F('min_year'))  # Only include records with both years
             .annotate(
                 avg_year=Cast((F('min_year') + F('max_year')) / 2, IntegerField())
             )
