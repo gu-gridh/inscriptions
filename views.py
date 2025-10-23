@@ -233,7 +233,7 @@ class InscriptionTagsViewSet(DynamicDepthViewSet):
         queryset = models.Inscription.objects.all().order_by('id')
         filterset_fields = get_fields(models.Inscription, exclude=DEFAULT_FIELDS+['pixels'])
         
-        all_tags = models.Tag.objects.all().order_by('title')
+        all_tags = models.Tag.objects.all().order_by('text')
         
         surface = self.request.query_params.get('surface')
         
