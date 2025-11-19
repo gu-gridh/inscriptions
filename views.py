@@ -627,8 +627,6 @@ class DataWidgetViewSet(DynamicDepthViewSet):
 #             .order_by("avg_year")
 #         )
 
-#         # Gorgraphic summary can be a json object with counts for each level of geographic data
-#         # ADM0, ADM1, ADM2, socken, kommun, landskap/län
     
 #         # Format summary
 #         summary["type_of_inscription"] = [
