@@ -485,65 +485,286 @@ class DataWidgetViewSet(DynamicDepthViewSet):
 
         return HttpResponse(json.dumps(data))
 
+"""Aram's preferred version of SummaryViewSet"""
 
+# class SummaryViewSet(DynamicDepthViewSet):
+#     """A separate viewset to return summary data for inscriptions."""
+#     queryset = models.Inscription.objects.filter(published=True)
+#     serializer_class = serializers.SummarySerializer
+#     # No filter_backends or filterset_fields - we handle filtering manually in get_queryset()
+    
+#     def get_filter_mapping(self):
+#         """Returns a mapping of query parameter names to their Django filter expressions."""
+#         return {
+#             'type_of_inscription': 'type_of_inscription__id__exact',
+#             'writing_system': 'writing_system__id__exact',
+#             'genre': 'genre__id__exact',
+#             'tags': 'tags__id__exact',
+#             'language': 'language__id__exact',
+#             'panel': 'panel__id__exact',
+#             'id': 'id',
+#             'medium': 'panel__medium__id__exact',
+#             'material': 'panel__material__exact',
+#             'alignment': 'alignment__id__exact',
+#             'condition': 'condition__id__exact',
+#             'mentioned_person': 'mentioned_person__id__exact',
+#             'panel_title_str': 'panel__title__startswith',
+#             'inscription_title_str': 'title__startswith',
+#         }
+    
+#     def get_queryset(self):
+#         """Apply custom filtering logic matching DataWidgetViewSet."""
+#         queryset = models.Inscription.objects.filter(published=True)
+#         filter_mapping = self.get_filter_mapping()
+        
+#         # Build filter criteria dynamically
+#         filter_kwargs = {}
+#         for param_name, filter_expression in filter_mapping.items():
+#             param_value = self.request.query_params.get(param_name)
+#             if param_value:
+#                 # Validate numeric ID fields
+#                 if '__id__exact' in filter_expression or filter_expression == 'id':
+#                     try:
+#                         # Ensure the value is a valid integer
+#                         int(param_value)
+#                         filter_kwargs[filter_expression] = param_value
+#                     except (ValueError, TypeError):
+#                         # Skip invalid numeric values silently
+#                         continue
+#                 else:
+#                     # For non-numeric fields, add directly
+#                     filter_kwargs[filter_expression] = param_value
+        
+#         # Apply all filters at once
+#         if filter_kwargs:
+#             queryset = queryset.filter(**filter_kwargs)
+        
+#         return queryset
 
+#     def list(self, request, *args, **kwargs):
+#         # Use get_queryset() directly - we handle all filtering there
+#         queryset = self.get_queryset()
+#         # Generate summary BEFORE pagination
+#         summary_data = self.summarize_results(queryset)
+        
+#         return Response(summary_data)
+    
+    
 
+#     def summarize_results(self, queryset):
+#         """Summarizes search results by creator and institution."""
 
+#         summary = {
+#             "type_of_inscription": [],
+#             "writing_system": [],
+#             "language": [],
+#             "textual_genre": [],
+#             "pictorial_description": [],
+#             "min_year": [],
+#             "max_year": [],
+#             "avg_year": [],
+#         }
+
+#         # Count images per creator
+#         type_of_inscription_counts = (
+#             queryset
+#             .values("type_of_inscription__text", "type_of_inscription__text_ukr")
+#             .annotate(count=Count("id", distinct=True))
+#             .order_by("-count")
+#         )
+
+#         # Count images per institution
+#         writing_system_counts = (
+#             queryset
+#             .values("writing_system__text", "writing_system__text_ukr")
+#             .annotate(count=Count("id", distinct=True))
+#             .order_by("-count")
+#         )
+#         # Count of documentation types by site
+#         language_counts = (
+#             queryset
+#             .values("language__text", "language__text_ukr")
+#             .annotate(count=Count("id", distinct=True))
+#             .order_by("-count")
+#         )
+#         # Summarise search results by motif type
+#         textual_genre_counts = (
+#             queryset
+#             .values("genre__text", "genre__text_ukr")
+#             .annotate(count=Count("id", distinct=True))
+#             .order_by("-count")
+#         )
+#         # Show number of images for each year 
+#         pictorial_description_counts = (
+#             queryset
+#             .values("tags__text", "tags__text_ukr")
+#             .annotate(count=Count("id", distinct=True))
+#             .order_by("-count")
+#         )
+
+#         min_year_counts = (
+#             queryset
+#             .values("min_year")
+#             .annotate(count=Count("id", distinct=True))
+#             .order_by("-count")
+#         )
+#         max_year_counts = (
+#             queryset
+#             .values("max_year")
+#             .annotate(count=Count("id", distinct=True))
+#             .order_by("-count")
+#         )
+
+#         # Calculate average year and group by it
+#         avg_year_counts = (
+#             queryset
+#             .filter(min_year__isnull=False, max_year__isnull=False, max_year__lte=200+F('min_year'))  # Only include records with both years
+#             .annotate(
+#                 avg_year=Cast((F('min_year') + F('max_year')) / 2, IntegerField())
+#             )
+#             .values("avg_year")
+#             .annotate(count=Count("id", distinct=True))
+#             .order_by("avg_year")
+#         )
+
+#         # Gorgraphic summary can be a json object with counts for each level of geographic data
+#         # ADM0, ADM1, ADM2, socken, kommun, landskap/län
+    
+#         # Format summary
+#         summary["type_of_inscription"] = [
+#             {
+#                 "type": entry["type_of_inscription__text"], 
+#                 "type_ukr": entry["type_of_inscription__text_ukr"], 
+#                 "count": entry["count"]}
+#             for entry in type_of_inscription_counts if entry["type_of_inscription__text"]
+#         ]
+
+#         summary["writing_system"] = [
+#             {
+#                 "writing_system": entry["writing_system__text"], 
+#                 "writing_system_ukr": entry["writing_system__text_ukr"],
+#                 "count": entry["count"]}
+#             for entry in writing_system_counts if entry["writing_system__text"]
+#         ]   
+
+#         summary["language"] = [
+#             {
+#                 "language": entry["language__text"], 
+#                 "language_ukr": entry["language__text_ukr"],
+#                 "count": entry["count"]}
+#             for entry in language_counts if entry["language__text"]
+#         ]
+
+#         # In the summarize_results method, replace the motifs section with:
+#         summary["textual_genre"] = [
+#             {
+#                 "textual_genre": entry["genre__text"], 
+#                 "textual_genre_ukr": entry["genre__text_ukr"],
+#                 "count": entry["count"]}
+#             for entry in textual_genre_counts if entry["genre__text"]
+#         ]
+
+#         summary["pictorial_description"] = [
+#             {
+#                 "pictorial_description": entry["tags__text"], 
+#                 "pictorial_description_ukr": entry["tags__text_ukr"],
+#                 "count": entry["count"]}
+#             for entry in pictorial_description_counts if entry["tags__text"]
+#         ]
+
+#         summary["min_year"] = [
+#             {"min_year": entry["min_year"], "count": entry["count"]}
+#             for entry in min_year_counts if entry["min_year"]
+#         ]
+
+#         summary["max_year"] = [
+#             {"max_year": entry["max_year"], "count": entry["count"]}
+#             for entry in max_year_counts if entry["max_year"]
+#         ]
+
+#         summary["avg_year"] = [
+#             {"avg_year": entry["avg_year"], "count": entry["count"]}
+#             for entry in avg_year_counts if entry["avg_year"] is not None
+#         ]
+
+#         return summary
+
+"""Original version of SummaryViewSet with manual filtering in list() method"""
 class SummaryViewSet(DynamicDepthViewSet):
     """A separate viewset to return summary data for inscriptions."""
-    queryset = models.Inscription.objects.filter(published=True)
+    queryset = models.Inscription.objects.all()
     serializer_class = serializers.SummarySerializer
-    filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
-    filterset_fields = ['id'] + get_fields(models.Inscription, exclude=DEFAULT_FIELDS + ['inscription_iiif_url', 'korniienko_image'])
-
-    # def get_queryset(self):
-    #     params = self.request.GET
-    #     operator = params.get("operator", "OR")
-    #     search_type = params.get("search_type")
-    #     category_type = params.get("category_type")
-
-    #     queryset = models.Inscription.objects.filter(published=True)
-
-    #     if category_type:
-    #         queryset = queryset.filter(type__text__iexact=category_type)
-
-    #     # Apply search filters using new structure
-    #     search_struct = self.build_search_query(params, search_type, operator)
-    #     for q_part in search_struct["chain_filters"]:
-    #         queryset = queryset.filter(q_part)
-    #     if search_struct["single_q"]:
-    #         queryset = queryset.filter(search_struct["single_q"])
-
-    #     queryset = self.apply_bbox_filter(queryset, params.get("in_bbox"))
-    #     return queryset.distinct().order_by('type__order', 'id')
-
+    
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        # Generate summary BEFORE pagination
-        summary_data = self.summarize_results(queryset)
+        # Query Parameters (matching DataWidgetViewSet exactly)
+        type_of_inscription = self.request.query_params.get('type_of_inscription')
+        writing_system = self.request.query_params.get('writing_system')
+        textual_genre = self.request.query_params.get('genre')
+        pictorial_description = self.request.query_params.get('tags')
+        language = self.request.query_params.get('language')
+        surface_id = self.request.query_params.get('panel')
+        inscription_id = self.request.query_params.get('id')
+        medium = self.request.query_params.get('medium')
+        material = self.request.query_params.get('material')
+        alignment = self.request.query_params.get('alignment')
+        condition = self.request.query_params.get('condition')
+        mentioned_person = self.request.query_params.get('mentioned_person')
+        panel_title_str = self.request.query_params.get('panel_title_str')
+        inscription_title_str = self.request.query_params.get('inscription_title_str')
+
+        # Filtering inscriptions (matching DataWidgetViewSet exactly)
+        inscriptions = models.Inscription.objects.all()
+        
+        if type_of_inscription:
+            inscriptions = inscriptions.filter(Q(type_of_inscription__id__exact=type_of_inscription))
+        
+        if writing_system:
+            inscriptions = inscriptions.filter(writing_system__id__exact=writing_system)
+        
+        if textual_genre:
+            inscriptions = inscriptions.filter(genre__id__exact=textual_genre)
+
+        if pictorial_description:
+            inscriptions = inscriptions.filter(tags__id__exact=pictorial_description)
+
+        if language:
+            inscriptions = inscriptions.filter(language__id__exact=language)
+
+        if surface_id:
+            inscriptions = inscriptions.filter(panel__id__exact=surface_id)
+
+        if inscription_id:
+            inscriptions = inscriptions.filter(id=inscription_id)
+
+        if medium:
+            inscriptions = inscriptions.filter(panel__medium__id__exact=medium)
+        
+        if material:
+            inscriptions = inscriptions.filter(panel__material__exact=material)
+
+        if alignment:
+            inscriptions = inscriptions.filter(alignment__id__exact=alignment)
+
+        if condition:
+            inscriptions = inscriptions.filter(condition__id__exact=condition)
+
+        if mentioned_person:
+            inscriptions = inscriptions.filter(mentioned_person__id__exact=mentioned_person)
+
+        if panel_title_str:
+            inscriptions = inscriptions.filter(panel__title__startswith=panel_title_str)
+
+        if inscription_title_str:
+            inscriptions = inscriptions.filter(title__startswith=inscription_title_str)
+
+        # Generate summary with filtered inscriptions
+        summary_data = self.summarize_results(inscriptions)
         
         return Response(summary_data)
-
-    # # TODO CONTINUE WORKING FROM HERE
+    
 
     def summarize_results(self, queryset):
         """Summarizes search results by creator and institution."""
-        # we should add Summarise search results by geographic data too: TODO
-        # Summarise by ADM0, ADM1, ADM2, socken, kommun, landskap/län: TODO
-        # motif: Two level summary with keyword categories and subcategories: Done
-        # Count of documentation types by site: Done
-        # Show number of images for each year: Done
-        # Summarise search results by creator and institution : Done
-
-        # summary = {
-        #     "creators": [],
-        #     "institutions": [],
-        #     "year": [],
-        #     "types": [],
-        #     "motifs": [],
-        #     "geographic": [],
-        #     "site": []
-        # }
 
         summary = {
             "type_of_inscription": [],
@@ -617,9 +838,6 @@ class SummaryViewSet(DynamicDepthViewSet):
             .annotate(count=Count("id", distinct=True))
             .order_by("avg_year")
         )
-
-        # Gorgraphic summary can be a json object with counts for each level of geographic data
-        # ADM0, ADM1, ADM2, socken, kommun, landskap/län
     
         # Format summary
         summary["type_of_inscription"] = [
