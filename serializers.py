@@ -197,10 +197,12 @@ class InscriptionSerializer(DynamicDepthSerializer):
     
     inscription_iiif_url = SerializerMethodField()
     korniienko_image = KorniienkoImageSerializer(many = True)
+    width = SerializerMethodField()
+    height = SerializerMethodField()
 
     class Meta:
         model = Inscription
-        fields = get_fields(Inscription, exclude=DEFAULT_FIELDS)+ ['id', 'inscription_iiif_url', 'korniienko_image']
+        fields = get_fields(Inscription, exclude=DEFAULT_FIELDS)+ ['id', 'inscription_iiif_url', 'korniienko_image', 'width', 'height']
         
     def get_inscription_iiif_url(self, obj):
         images = obj.panel.images.filter(type_of_image=1).values() # 1 is orthophotos
@@ -210,6 +212,50 @@ class InscriptionSerializer(DynamicDepthSerializer):
             url = f"https://img.dh.gu.se/saintsophia/static/{images[0]['iiif_file']}/{obj.position_on_surface}/"
         
         return url
+    
+    def get_width(self, obj):
+        """Calculate inscription width in pixels from IIIF pct region: width = baseWidth * (pctWidth / 100)"""
+        images = obj.panel.images.filter(type_of_image=1)
+        if not images.exists() or not obj.position_on_surface:
+            return None
+            
+        image = images.first()
+        if not image.width:
+            return None
+            
+        try:
+            # Parse pct:x,y,width,height format from position_on_surface
+            if obj.position_on_surface.startswith('pct:'):
+                pct_str = obj.position_on_surface.replace('pct:', '')
+                pct_values = pct_str.split(',')
+                if len(pct_values) == 4:
+                    pct_width = float(pct_values[2])
+                    return int(image.width * (pct_width / 100))
+        except:
+            pass
+        return None
+    
+    def get_height(self, obj):
+        """Calculate inscription height in pixels from IIIF pct region: height = baseHeight * (pctHeight / 100)"""
+        images = obj.panel.images.filter(type_of_image=1)
+        if not images.exists() or not obj.position_on_surface:
+            return None
+            
+        image = images.first()
+        if not image.height:
+            return None
+            
+        try:
+            # Parse pct:x,y,width,height format from position_on_surface
+            if obj.position_on_surface.startswith('pct:'):
+                pct_str = obj.position_on_surface.replace('pct:', '')
+                pct_values = pct_str.split(',')
+                if len(pct_values) == 4:
+                    pct_height = float(pct_values[3])
+                    return int(image.height * (pct_height / 100))
+        except:
+            pass
+        return None
 
 
 class InscriptionTagsSerializer(DynamicDepthSerializer):

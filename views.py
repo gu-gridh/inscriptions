@@ -182,7 +182,11 @@ class PanelStringViewSet(DynamicDepthViewSet):
 
 
 class InscriptionFilter(django_filters.FilterSet):
-    # panel__title = django_filters.CharFilter()
+    # Custom filters for panel-related fields to allow simple parameter names
+    medium = django_filters.NumberFilter(field_name='panel__medium__id', lookup_expr='exact')
+    material = django_filters.NumberFilter(field_name='panel__material__id', lookup_expr='exact')
+    panel_title_str = django_filters.CharFilter(field_name='panel__title', lookup_expr='startswith')
+    inscription_title_str = django_filters.CharFilter(field_name='title', lookup_expr='startswith')
 
     class Meta:
         model = models.Inscription
@@ -485,214 +489,14 @@ class DataWidgetViewSet(DynamicDepthViewSet):
 
         return HttpResponse(json.dumps(data))
 
-"""Aram's preferred version of SummaryViewSet"""
 
-# class SummaryViewSet(DynamicDepthViewSet):
-#     """A separate viewset to return summary data for inscriptions."""
-#     queryset = models.Inscription.objects.filter(published=True)
-#     serializer_class = serializers.SummarySerializer
-#     # No filter_backends or filterset_fields - we handle filtering manually in get_queryset()
-    
-#     def get_filter_mapping(self):
-#         """Returns a mapping of query parameter names to their Django filter expressions."""
-#         return {
-#             'type_of_inscription': 'type_of_inscription__id__exact',
-#             'writing_system': 'writing_system__id__exact',
-#             'genre': 'genre__id__exact',
-#             'tags': 'tags__id__exact',
-#             'language': 'language__id__exact',
-#             'panel': 'panel__id__exact',
-#             'id': 'id',
-#             'medium': 'panel__medium__id__exact',
-#             'material': 'panel__material__exact',
-#             'alignment': 'alignment__id__exact',
-#             'condition': 'condition__id__exact',
-#             'mentioned_person': 'mentioned_person__id__exact',
-#             'panel_title_str': 'panel__title__startswith',
-#             'inscription_title_str': 'title__startswith',
-#         }
-    
-#     def get_queryset(self):
-#         """Apply custom filtering logic matching DataWidgetViewSet."""
-#         queryset = models.Inscription.objects.filter(published=True)
-#         filter_mapping = self.get_filter_mapping()
-        
-#         # Build filter criteria dynamically
-#         filter_kwargs = {}
-#         for param_name, filter_expression in filter_mapping.items():
-#             param_value = self.request.query_params.get(param_name)
-#             if param_value:
-#                 # Validate numeric ID fields
-#                 if '__id__exact' in filter_expression or filter_expression == 'id':
-#                     try:
-#                         # Ensure the value is a valid integer
-#                         int(param_value)
-#                         filter_kwargs[filter_expression] = param_value
-#                     except (ValueError, TypeError):
-#                         # Skip invalid numeric values silently
-#                         continue
-#                 else:
-#                     # For non-numeric fields, add directly
-#                     filter_kwargs[filter_expression] = param_value
-        
-#         # Apply all filters at once
-#         if filter_kwargs:
-#             queryset = queryset.filter(**filter_kwargs)
-        
-#         return queryset
-
-#     def list(self, request, *args, **kwargs):
-#         # Use get_queryset() directly - we handle all filtering there
-#         queryset = self.get_queryset()
-#         # Generate summary BEFORE pagination
-#         summary_data = self.summarize_results(queryset)
-        
-#         return Response(summary_data)
-    
-    
-
-#     def summarize_results(self, queryset):
-#         """Summarizes search results by creator and institution."""
-
-#         summary = {
-#             "type_of_inscription": [],
-#             "writing_system": [],
-#             "language": [],
-#             "textual_genre": [],
-#             "pictorial_description": [],
-#             "min_year": [],
-#             "max_year": [],
-#             "avg_year": [],
-#         }
-
-#         # Count images per creator
-#         type_of_inscription_counts = (
-#             queryset
-#             .values("type_of_inscription__text", "type_of_inscription__text_ukr")
-#             .annotate(count=Count("id", distinct=True))
-#             .order_by("-count")
-#         )
-
-#         # Count images per institution
-#         writing_system_counts = (
-#             queryset
-#             .values("writing_system__text", "writing_system__text_ukr")
-#             .annotate(count=Count("id", distinct=True))
-#             .order_by("-count")
-#         )
-#         # Count of documentation types by site
-#         language_counts = (
-#             queryset
-#             .values("language__text", "language__text_ukr")
-#             .annotate(count=Count("id", distinct=True))
-#             .order_by("-count")
-#         )
-#         # Summarise search results by motif type
-#         textual_genre_counts = (
-#             queryset
-#             .values("genre__text", "genre__text_ukr")
-#             .annotate(count=Count("id", distinct=True))
-#             .order_by("-count")
-#         )
-#         # Show number of images for each year 
-#         pictorial_description_counts = (
-#             queryset
-#             .values("tags__text", "tags__text_ukr")
-#             .annotate(count=Count("id", distinct=True))
-#             .order_by("-count")
-#         )
-
-#         min_year_counts = (
-#             queryset
-#             .values("min_year")
-#             .annotate(count=Count("id", distinct=True))
-#             .order_by("-count")
-#         )
-#         max_year_counts = (
-#             queryset
-#             .values("max_year")
-#             .annotate(count=Count("id", distinct=True))
-#             .order_by("-count")
-#         )
-
-#         # Calculate average year and group by it
-#         avg_year_counts = (
-#             queryset
-#             .filter(min_year__isnull=False, max_year__isnull=False, max_year__lte=200+F('min_year'))  # Only include records with both years
-#             .annotate(
-#                 avg_year=Cast((F('min_year') + F('max_year')) / 2, IntegerField())
-#             )
-#             .values("avg_year")
-#             .annotate(count=Count("id", distinct=True))
-#             .order_by("avg_year")
-#         )
-
-    
-#         # Format summary
-#         summary["type_of_inscription"] = [
-#             {
-#                 "type": entry["type_of_inscription__text"], 
-#                 "type_ukr": entry["type_of_inscription__text_ukr"], 
-#                 "count": entry["count"]}
-#             for entry in type_of_inscription_counts if entry["type_of_inscription__text"]
-#         ]
-
-#         summary["writing_system"] = [
-#             {
-#                 "writing_system": entry["writing_system__text"], 
-#                 "writing_system_ukr": entry["writing_system__text_ukr"],
-#                 "count": entry["count"]}
-#             for entry in writing_system_counts if entry["writing_system__text"]
-#         ]   
-
-#         summary["language"] = [
-#             {
-#                 "language": entry["language__text"], 
-#                 "language_ukr": entry["language__text_ukr"],
-#                 "count": entry["count"]}
-#             for entry in language_counts if entry["language__text"]
-#         ]
-
-#         # In the summarize_results method, replace the motifs section with:
-#         summary["textual_genre"] = [
-#             {
-#                 "textual_genre": entry["genre__text"], 
-#                 "textual_genre_ukr": entry["genre__text_ukr"],
-#                 "count": entry["count"]}
-#             for entry in textual_genre_counts if entry["genre__text"]
-#         ]
-
-#         summary["pictorial_description"] = [
-#             {
-#                 "pictorial_description": entry["tags__text"], 
-#                 "pictorial_description_ukr": entry["tags__text_ukr"],
-#                 "count": entry["count"]}
-#             for entry in pictorial_description_counts if entry["tags__text"]
-#         ]
-
-#         summary["min_year"] = [
-#             {"min_year": entry["min_year"], "count": entry["count"]}
-#             for entry in min_year_counts if entry["min_year"]
-#         ]
-
-#         summary["max_year"] = [
-#             {"max_year": entry["max_year"], "count": entry["count"]}
-#             for entry in max_year_counts if entry["max_year"]
-#         ]
-
-#         summary["avg_year"] = [
-#             {"avg_year": entry["avg_year"], "count": entry["count"]}
-#             for entry in avg_year_counts if entry["avg_year"] is not None
-#         ]
-
-#         return summary
-
-"""Original version of SummaryViewSet with manual filtering in list() method"""
 class SummaryViewSet(DynamicDepthViewSet):
     """A separate viewset to return summary data for inscriptions."""
     queryset = models.Inscription.objects.all()
     serializer_class = serializers.SummarySerializer
-    
+    filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
+    filterset_class = InscriptionFilter  # Use the same filter as InscriptionViewSet
+
     def list(self, request, *args, **kwargs):
         # Query Parameters (matching DataWidgetViewSet exactly)
         type_of_inscription = self.request.query_params.get('type_of_inscription')
@@ -836,7 +640,7 @@ class SummaryViewSet(DynamicDepthViewSet):
             .annotate(count=Count("id", distinct=True))
             .order_by("avg_year")
         )
-    
+
         # Format summary
         summary["type_of_inscription"] = [
             {
@@ -862,7 +666,6 @@ class SummaryViewSet(DynamicDepthViewSet):
             for entry in language_counts if entry["language__text"]
         ]
 
-        # In the summarize_results method, replace the motifs section with:
         summary["textual_genre"] = [
             {
                 "textual_genre": entry["genre__text"], 

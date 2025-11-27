@@ -345,6 +345,8 @@ class Inscription(abstract.AbstractBaseModel):
     bibliography = models.ManyToManyField(BibliographyItem, blank=True, help_text=_("Add bibliography items"), related_name="inscriptions")
     author = models.ManyToManyField(Author, blank=True, verbose_name=_("Contributors"), help_text=_("List of authors for this inscription"))
     
+    # Epidoc field
+    epidoc_text = models.TextField(null=True, blank=True, verbose_name=_("EpiDoc XML"), help_text=_("EpiDoc XML representation of the inscription"))
     
     def __str__(self) -> str:
         if (self.title) is not None:
@@ -391,6 +393,10 @@ class Image(abstract.AbstractTIFFImageModel):
     inscription = models.ForeignKey(Inscription, null=True, blank=True, on_delete=models.CASCADE, related_name="inscription")
     
     type_of_image = models.ForeignKey(ImageType, on_delete=models.SET_NULL, blank=True, null=True, related_name="image_type")
+    
+    # Add width and height fields that we can get them form info.json
+    width = models.IntegerField(null=True, blank=True, verbose_name=_("Image width in pixels"))
+    height = models.IntegerField(null=True, blank=True, verbose_name=_("Image height in pixels"))
     
     def __str__(self) -> str:
         return f"Image for surface {self.panel}"
