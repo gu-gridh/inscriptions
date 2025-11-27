@@ -182,7 +182,11 @@ class PanelStringViewSet(DynamicDepthViewSet):
 
 
 class InscriptionFilter(django_filters.FilterSet):
-    # panel__title = django_filters.CharFilter()
+    # Custom filters for panel-related fields to allow simple parameter names
+    medium = django_filters.NumberFilter(field_name='panel__medium__id', lookup_expr='exact')
+    material = django_filters.NumberFilter(field_name='panel__material__id', lookup_expr='exact')
+    panel_title_str = django_filters.CharFilter(field_name='panel__title', lookup_expr='startswith')
+    inscription_title_str = django_filters.CharFilter(field_name='title', lookup_expr='startswith')
 
     class Meta:
         model = models.Inscription
@@ -486,36 +490,12 @@ class DataWidgetViewSet(DynamicDepthViewSet):
         return HttpResponse(json.dumps(data))
 
 
-
-
-
 class SummaryViewSet(DynamicDepthViewSet):
     """A separate viewset to return summary data for inscriptions."""
     queryset = models.Inscription.objects.filter(published=True)
     serializer_class = serializers.SummarySerializer
     filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
-    filterset_fields = ['id'] + get_fields(models.Inscription, exclude=DEFAULT_FIELDS + ['inscription_iiif_url', 'korniienko_image'])
-
-    # def get_queryset(self):
-    #     params = self.request.GET
-    #     operator = params.get("operator", "OR")
-    #     search_type = params.get("search_type")
-    #     category_type = params.get("category_type")
-
-    #     queryset = models.Inscription.objects.filter(published=True)
-
-    #     if category_type:
-    #         queryset = queryset.filter(type__text__iexact=category_type)
-
-    #     # Apply search filters using new structure
-    #     search_struct = self.build_search_query(params, search_type, operator)
-    #     for q_part in search_struct["chain_filters"]:
-    #         queryset = queryset.filter(q_part)
-    #     if search_struct["single_q"]:
-    #         queryset = queryset.filter(search_struct["single_q"])
-
-    #     queryset = self.apply_bbox_filter(queryset, params.get("in_bbox"))
-    #     return queryset.distinct().order_by('type__order', 'id')
+    filterset_class = InscriptionFilter  # Use the same filter as InscriptionViewSet
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -528,22 +508,6 @@ class SummaryViewSet(DynamicDepthViewSet):
 
     def summarize_results(self, queryset):
         """Summarizes search results by creator and institution."""
-        # we should add Summarise search results by geographic data too: TODO
-        # Summarise by ADM0, ADM1, ADM2, socken, kommun, landskap/län: TODO
-        # motif: Two level summary with keyword categories and subcategories: Done
-        # Count of documentation types by site: Done
-        # Show number of images for each year: Done
-        # Summarise search results by creator and institution : Done
-
-        # summary = {
-        #     "creators": [],
-        #     "institutions": [],
-        #     "year": [],
-        #     "types": [],
-        #     "motifs": [],
-        #     "geographic": [],
-        #     "site": []
-        # }
 
         summary = {
             "type_of_inscription": [],
@@ -618,9 +582,6 @@ class SummaryViewSet(DynamicDepthViewSet):
             .order_by("avg_year")
         )
 
-        # Gorgraphic summary can be a json object with counts for each level of geographic data
-        # ADM0, ADM1, ADM2, socken, kommun, landskap/län
-    
         # Format summary
         summary["type_of_inscription"] = [
             {
@@ -646,7 +607,6 @@ class SummaryViewSet(DynamicDepthViewSet):
             for entry in language_counts if entry["language__text"]
         ]
 
-        # In the summarize_results method, replace the motifs section with:
         summary["textual_genre"] = [
             {
                 "textual_genre": entry["genre__text"], 
