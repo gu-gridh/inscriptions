@@ -326,6 +326,8 @@ class Inscription(abstract.AbstractBaseModel):
     dating_criteria = models.ManyToManyField(DatingCriterium, blank=True)
     
     # graffiti data
+    # Epidoc field
+    epidoc_text = models.TextField(null=True, blank=True, verbose_name=_("EpiDoc XML"), help_text=_("EpiDoc XML representation of the inscription"))
     transcription = RichTextField(null=True, blank=True, verbose_name=_("Textual graffiti"), help_text=_("Transcription of the graffiti"))
     interpretative_edition = RichTextField(null=True, blank=True, help_text=_("Interpretation of the graffiti"))
     romanisation = RichTextField(null=True, blank=True, help_text=_("Romanisation of the graffiti"))
@@ -345,8 +347,6 @@ class Inscription(abstract.AbstractBaseModel):
     bibliography = models.ManyToManyField(BibliographyItem, blank=True, help_text=_("Add bibliography items"), related_name="inscriptions")
     author = models.ManyToManyField(Author, blank=True, verbose_name=_("Contributors"), help_text=_("List of authors for this inscription"))
     
-    # Epidoc field
-    epidoc_text = models.TextField(null=True, blank=True, verbose_name=_("EpiDoc XML"), help_text=_("EpiDoc XML representation of the inscription"))
     
     def __str__(self) -> str:
         if (self.title) is not None:
