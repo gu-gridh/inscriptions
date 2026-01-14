@@ -338,6 +338,8 @@ class AnnotationViewSet(DynamicDepthViewSet):
 class ImageFilter(django_filters.FilterSet):
     # panel__title = django_filters.CharFilter()
 
+
+    
     class Meta:
         model = models.Image
         fields = {
@@ -347,6 +349,7 @@ class ImageFilter(django_filters.FilterSet):
             'panel__title': ['exact', 'icontains', 'startswith'],
             'panel__material': ['exact'],
             'panel__medium': ['exact'],
+            'panel__inscriptions__title': ['exact', 'icontains', 'startswith']
         }
 
 
