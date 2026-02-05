@@ -8,6 +8,7 @@ from django.http import HttpResponse
 import json
 import django_filters
 from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
 
 
 class TagViewSet(DynamicDepthViewSet):
@@ -226,7 +227,104 @@ class InscriptionViewSet(DynamicDepthViewSet):
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     filterset_class = InscriptionFilter
     # filterset_fields = get_fields(models.Inscription, exclude=DEFAULT_FIELDS)
+
+
+# Search by multiple text fields as well as  korniienko number and panel title
+class SearchInscriptionViewSet(DynamicDepthViewSet):
+    serializer_class = serializers.InscriptionSerializer
+
+    def get_queryset(self):
+        queryset = models.Inscription.objects.all()
+        search_term = self.request.query_params.get('q', None)
+        
+        if search_term:
+            queryset = queryset.filter(
+                Q(title__icontains=search_term) |
+                Q(panel__title__icontains=search_term) |
+                Q(transcription__icontains=search_term) |
+                Q(interpretative_edition__icontains=search_term) |
+                Q(romanisation__icontains=search_term) |
+                Q(translation_eng__icontains=search_term) |
+                Q(translation_ukr__icontains=search_term) |
+                Q(mentioned_person__name__icontains=search_term) |
+                Q(korniienko_image__title__icontains=search_term)
+            ).order_by('korniienko_image__title')
+
+        return queryset.distinct()
     
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+    filterset_class = InscriptionFilter
+
+class AutoCompleteInscriptionViewSet(ViewSet):
+    """Returns inscriptions that start with a given string based on search fields, for autocomplete purposes."""
+
+    def list(self, request, *args, **kwargs):
+        q = request.query_params.get('q').strip().lower()
+        if not q:
+            return Response([])
+    
+        limit = 10  # Limit the number of results for autocomplete
+        suggestions = []  # Use a set to avoid duplicates
+
+        def add_suggestions(filtered_qs, label):
+            seen = set()
+            for row in filtered_qs:
+                for val in row if isinstance(row, (tuple, list)) else [row]:
+                    if val:
+                        val_str = str(val).strip()
+                        if q in val_str.lower() and val_str.lower() not in seen:
+                            suggestions.append({"value": val_str, "source": label})
+                            seen.add(val_str.lower())
+
+        # Search in various fields
+        inscriptions = models.Inscription.objects.all()
+        add_suggestions(
+            inscriptions.filter(title__istartswith=q).values_list('title').distinct()[:limit],
+            'Title'
+        )
+        add_suggestions(
+            inscriptions.filter(panel__title__istartswith=q).values_list('panel__title').distinct()[:limit],
+            'Panel Title'
+        )
+        add_suggestions(
+            inscriptions.filter(transcription__istartswith=q).values_list('transcription').distinct()[:limit],
+            'Transcription'
+        )
+        add_suggestions(
+            inscriptions.filter(interpretative_edition__istartswith=q).values_list('interpretative_edition').distinct()[:limit],
+            'Interpretative Edition'
+        )
+        add_suggestions(
+            inscriptions.filter(romanisation__istartswith=q).values_list('romanisation').distinct()[:limit],
+            'Romanisation'
+        )
+        add_suggestions(
+            inscriptions.filter(translation_eng__istartswith=q).values_list('translation_eng').distinct()[:limit],
+            'Translation (ENG)'
+        )
+        add_suggestions(
+            inscriptions.filter(translation_ukr__istartswith=q).values_list('translation_ukr').distinct()[:limit],
+            'Translation (UKR)'
+        )
+        add_suggestions(
+            inscriptions.filter(mentioned_person__name__istartswith=q).values_list('mentioned_person__name').distinct()[:limit],
+            'Mentioned Person'
+        )
+        add_suggestions(
+            inscriptions.filter(korniienko_image__title__istartswith=q).values_list('korniienko_image__title').distinct()[:limit],
+            'Korniienko Image Title'
+        )   
+
+        # Limit the total number of suggestions
+                # duplicate and sort
+        unique_suggestions = {(s["value"], s["source"]) for s in suggestions}
+        sorted_suggestions = sorted(
+            [{"value": v, "source": s} for v, s in unique_suggestions],
+            key=lambda x: x["value"]
+        )[:20]
+
+        return Response(sorted_suggestions)
+
 
 class InscriptionTagsViewSet(DynamicDepthViewSet):
     queryset = models.Inscription.objects.all().order_by('id')

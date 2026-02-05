@@ -24,6 +24,13 @@ router.register(rf'{endpoint}/korniienko-image', views.KorniienkoImageViewSet, b
 router.register(rf'{endpoint}/object-rti', views.ObjectRTIViewSet, basename='object RTI')
 router.register(rf'{endpoint}/object-mesh-3d', views.ObjectMesh3DViewSet, basename='object Mesh 3D')
 router.register(rf'{endpoint}/inscription', views.InscriptionViewSet, basename='inscription')
+
+# new search view for inscriptions
+router.register(rf'{endpoint}/search/inscription', views.SearchInscriptionViewSet, basename= 'search inscriptions')
+# Automatic complete view for inscriptions
+router.register(rf'{endpoint}/autocomplete/inscription', views.AutoCompleteInscriptionViewSet, basename='autocomplete inscriptions')
+
+
 router.register(rf'{endpoint}/inscription-string', views.InscriptionStringViewSet, basename='inscriptions beginning by string')
 router.register(rf'{endpoint}/inscription-contributors', views.ContributorsViewSet, basename='contributors to inscription')
 router.register(rf'{endpoint}/annotation', views.AnnotationViewSet, basename='annotations')
