@@ -39,7 +39,10 @@ router.register(rf'{endpoint}/tags-with-data', views.TagsWithDataViewSet, basena
 router.register(rf'{endpoint}/genre-with-data', views.GenreDataViewSet, basename="genre with data attached")
 router.register(rf'{endpoint}/writing-system-with-data', views.WritingSystemWithDataViewSet, basename="writing system with data attached")
 router.register(rf'{endpoint}/language-with-data', views.LanguageWithDataViewSet, basename="language with data attached")
+# views for data widgets including search and filter options
+router.register(rf'{endpoint}/data-widget', views.SearchDataWidgetViewSet, basename="data widget")
 router.register(rf'{endpoint}/inscriptions-info', views.DataWidgetViewSet, basename="data for widget")
+
 router.register(rf'{endpoint}/bibliography-item', views.BibliographyItemViewSet, basename="bibliography items")
 router.register(rf'{endpoint}/summary', views.SummaryViewSet, basename="data summary")
 
