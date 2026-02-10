@@ -279,39 +279,39 @@ class AutoCompleteInscriptionViewSet(ViewSet):
         # Search in various fields
         inscriptions = models.Inscription.objects.all()
         add_suggestions(
-            inscriptions.filter(title__istartswith=q).values_list('title').distinct()[:limit],
+            inscriptions.filter(title__icontains=q).values_list('title').distinct()[:limit],
             'Title'
         )
         add_suggestions(
-            inscriptions.filter(panel__title__istartswith=q).values_list('panel__title').distinct()[:limit],
+            inscriptions.filter(panel__title__icontains=q).values_list('panel__title').distinct()[:limit],
             'Panel Title'
         )
         add_suggestions(
-            inscriptions.filter(transcription__istartswith=q).values_list('transcription').distinct()[:limit],
+            inscriptions.filter(transcription__icontains=q).values_list('transcription').distinct()[:limit],
             'Transcription'
         )
         add_suggestions(
-            inscriptions.filter(interpretative_edition__istartswith=q).values_list('interpretative_edition').distinct()[:limit],
+            inscriptions.filter(interpretative_edition__icontains=q).values_list('interpretative_edition').distinct()[:limit],
             'Interpretative Edition'
         )
         add_suggestions(
-            inscriptions.filter(romanisation__istartswith=q).values_list('romanisation').distinct()[:limit],
+            inscriptions.filter(romanisation__icontains=q).values_list('romanisation').distinct()[:limit],
             'Romanisation'
         )
         add_suggestions(
-            inscriptions.filter(translation_eng__istartswith=q).values_list('translation_eng').distinct()[:limit],
+            inscriptions.filter(translation_eng__icontains=q).values_list('translation_eng').distinct()[:limit],
             'Translation (ENG)'
         )
         add_suggestions(
-            inscriptions.filter(translation_ukr__istartswith=q).values_list('translation_ukr').distinct()[:limit],
+            inscriptions.filter(translation_ukr__icontains=q).values_list('translation_ukr').distinct()[:limit],
             'Translation (UKR)'
         )
         add_suggestions(
-            inscriptions.filter(mentioned_person__name__istartswith=q).values_list('mentioned_person__name').distinct()[:limit],
+            inscriptions.filter(mentioned_person__name__icontains=q).values_list('mentioned_person__name').distinct()[:limit],
             'Mentioned Person'
         )
         add_suggestions(
-            inscriptions.filter(korniienko_image__title__istartswith=q).values_list('korniienko_image__title').distinct()[:limit],
+            inscriptions.filter(korniienko_image__title__icontains=q).values_list('korniienko_image__title').distinct()[:limit],
             'Korniienko Image Title'
         )   
 
