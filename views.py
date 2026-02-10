@@ -256,70 +256,89 @@ class SearchInscriptionViewSet(DynamicDepthViewSet):
     filterset_class = InscriptionFilter
 
 class AutoCompleteInscriptionViewSet(ViewSet):
-    """Returns inscriptions that start with a given string based on search fields, for autocomplete purposes."""
+    """
+        Returns inscriptions that start with a given string based on search fields, 
+        for autocomplete purposes.
+        We also need to add ids to be able to link the suggestions to the actual inscription.
+        """
 
     def list(self, request, *args, **kwargs):
-        q = request.query_params.get('q').strip().lower()
+        q = request.query_params.get('q')
+        if not q:
+            return Response([])
+
+        q = q.strip().lower()
         if not q:
             return Response([])
     
         limit = 10  # Limit the number of results for autocomplete
-        suggestions = []  # Use a set to avoid duplicates
+        suggestions = {}  # (value, source) -> set(ids)
 
         def add_suggestions(filtered_qs, label):
             seen = set()
             for row in filtered_qs:
-                for val in row if isinstance(row, (tuple, list)) else [row]:
-                    if val:
-                        val_str = str(val).strip()
-                        if q in val_str.lower() and val_str.lower() not in seen:
-                            suggestions.append({"value": val_str, "source": label})
-                            seen.add(val_str.lower())
+                if not row:
+                    continue
+                value, inscription_id = row
+                if value:
+                    val_str = str(value).strip()
+                    val_key = val_str.lower()
+                    if q in val_key and val_key not in seen:
+                        key = (val_str, label)
+                        suggestions.setdefault(key, set()).add(inscription_id)
+                        seen.add(val_key)
 
         # Search in various fields
         inscriptions = models.Inscription.objects.all()
         add_suggestions(
-            inscriptions.filter(title__icontains=q).values_list('title').distinct()[:limit],
+            inscriptions.filter(title__icontains=q).values_list('title', 'id').distinct()[:limit],
             'Title'
         )
         add_suggestions(
-            inscriptions.filter(panel__title__icontains=q).values_list('panel__title').distinct()[:limit],
+            inscriptions.filter(panel__title__icontains=q).values_list('panel__title', 'id').distinct()[:limit],
             'Panel Title'
         )
         add_suggestions(
-            inscriptions.filter(transcription__icontains=q).values_list('transcription').distinct()[:limit],
+            inscriptions.filter(transcription__icontains=q).values_list('transcription', 'id').distinct()[:limit],
             'Transcription'
         )
         add_suggestions(
-            inscriptions.filter(interpretative_edition__icontains=q).values_list('interpretative_edition').distinct()[:limit],
+            inscriptions.filter(interpretative_edition__icontains=q).values_list('interpretative_edition', 'id').distinct()[:limit],
             'Interpretative Edition'
         )
         add_suggestions(
-            inscriptions.filter(romanisation__icontains=q).values_list('romanisation').distinct()[:limit],
+            inscriptions.filter(romanisation__icontains=q).values_list('romanisation', 'id').distinct()[:limit],
             'Romanisation'
         )
         add_suggestions(
-            inscriptions.filter(translation_eng__icontains=q).values_list('translation_eng').distinct()[:limit],
+            inscriptions.filter(translation_eng__icontains=q).values_list('translation_eng', 'id').distinct()[:limit],
             'Translation (ENG)'
         )
         add_suggestions(
-            inscriptions.filter(translation_ukr__icontains=q).values_list('translation_ukr').distinct()[:limit],
+            inscriptions.filter(translation_ukr__icontains=q).values_list('translation_ukr', 'id').distinct()[:limit],
             'Translation (UKR)'
         )
         add_suggestions(
-            inscriptions.filter(mentioned_person__name__icontains=q).values_list('mentioned_person__name').distinct()[:limit],
+            inscriptions.filter(mentioned_person__name__icontains=q).values_list('mentioned_person__name', 'id').distinct()[:limit],
             'Mentioned Person'
         )
         add_suggestions(
-            inscriptions.filter(korniienko_image__title__icontains=q).values_list('korniienko_image__title').distinct()[:limit],
+            inscriptions.filter(korniienko_image__title__icontains=q).values_list('korniienko_image__title', 'id').distinct()[:limit],
             'Korniienko Image Title'
         )   
 
         # Limit the total number of suggestions
                 # duplicate and sort
-        unique_suggestions = {(s["value"], s["source"]) for s in suggestions}
         sorted_suggestions = sorted(
-            [{"value": v, "source": s} for v, s in unique_suggestions],
+            [
+                {
+                    "value": value,
+                    "source": source,
+                    "ids": sorted(list(ids)),
+                    # **({"id": next(iter(ids))} if len(ids) == 1 else {})
+                }
+                for (value, source), ids in suggestions.items()
+            ],
             key=lambda x: x["value"]
         )[:20]
 
