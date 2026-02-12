@@ -611,84 +611,77 @@ class SearchDataWidgetViewSet(DynamicDepthViewSet):
         Same as DataWidgetViewSet but includes search parameters including:
         transcription, interpretative edition, romanisation, translations, 
         mentioned person and korniienko image title. 
-        This is to be used for the search widget, while DataWidgetViewSet is for the filter widget.
+        This is to be used for the search widget
     """
     queryset = models.Inscription.objects.all()
     serializer_class = serializers.InscriptionSerializer
 
-    def list(self, request, *args, **kwargs):
-        # Query Parameters 
-        type_of_inscription = self.request.query_params.get('type_of_inscription')
-        writing_system = self.request.query_params.get('writing_system')
-        textual_genre = self.request.query_params.get('genre')
-        pictorial_description = self.request.query_params.get('tags')
-        language = self.request.query_params.get('language')
-        surface_id = self.request.query_params.get('panel')
-        inscription_id = self.request.query_params.get('id')
-        medium = self.request.query_params.get('medium')
-        material = self.request.query_params.get('material')
-        alignment = self.request.query_params.get('alignment')
-        condition = self.request.query_params.get('condition')
-        mentioned_person = self.request.query_params.get('mentioned_person')
-        panel_title_str = self.request.query_params.get('panel_title_str')
-        inscription_title_str = self.request.query_params.get('inscription_title_str')
-        title = self.request.query_params.get('title')
-        transcription = self.request.query_params.get('transcription')
-        interpretative_edition = self.request.query_params.get('interpretative_edition')
-        romanisation = self.request.query_params.get('romanisation')
-        translation_eng = self.request.query_params.get('translation_eng')
-        translation_ukr = self.request.query_params.get('translation_ukr')
-        mentioned_person_name = self.request.query_params.get('mentioned_person_name')
-        korniienko_image_title = self.request.query_params.get('korniienko_image_title')
+    def list(self, request, *args, **kwargs): 
+        # Query Parameters
+        q = (self.request.query_params.get('q') or '').strip()
 
-        # filtering places
-        count_all_inscriptions = models.Inscription.objects.all().count()
-        inscriptions = models.Inscription.objects.all() 
-        if title:
-            inscriptions = inscriptions.filter(title__icontains=title)
-        if transcription:
-            inscriptions = inscriptions.filter(transcription__icontains=transcription)
-        if interpretative_edition:
-            inscriptions = inscriptions.filter(interpretative_edition__icontains=interpretative_edition)
-        if romanisation:
-            inscriptions = inscriptions.filter(romanisation__icontains=romanisation)
-        if translation_eng:
-            inscriptions = inscriptions.filter(translation_eng__icontains=translation_eng)
-        if translation_ukr:
-            inscriptions = inscriptions.filter(translation_ukr__icontains=translation_ukr)
-        if mentioned_person_name:
-            inscriptions = inscriptions.filter(mentioned_person__name__icontains=mentioned_person_name) 
-        if korniienko_image_title:
-            inscriptions = inscriptions.filter(korniienko_image__title__icontains=korniienko_image_title)   
-        if type_of_inscription:
-            inscriptions = inscriptions.filter(Q(type_of_inscription__id__exact=type_of_inscription))
-        if writing_system:
-            inscriptions = inscriptions.filter(writing_system__id__exact=writing_system)
-        if textual_genre:
-            inscriptions = inscriptions.filter(genre__id__exact=textual_genre)
-        if pictorial_description:
-            inscriptions = inscriptions.filter(tags__id__exact=pictorial_description)
-        if language:
-            inscriptions = inscriptions.filter(language__id__exact=language)
-        if surface_id:
-            inscriptions = inscriptions.filter(panel__id__exact=surface_id)
-        if inscription_id:
-            inscriptions = inscriptions.filter(id=inscription_id)
-        if medium:
-            inscriptions = inscriptions.filter(panel__medium__id__exact=medium)
-        if material:
-            inscriptions = inscriptions.filter(panel__material__exact=material)
-        if alignment:
-            inscriptions = inscriptions.filter(alignment__id__exact=alignment)
-        if condition:
-            inscriptions = inscriptions.filter(condition__id__exact=condition)
-        if mentioned_person:
-            inscriptions = inscriptions.filter(mentioned_person__id__exact=mentioned_person)
-        if panel_title_str:
-            inscriptions = inscriptions.filter(panel__title__startswith=panel_title_str)
-        if inscription_title_str:
-            inscriptions = inscriptions.filter(title__startswith=inscription_title_str) 
-        count_inscriptions_shown = inscriptions.all().count()
+        # Base filter widget parameters
+        filter_mapping = {
+            'type_of_inscription': 'type_of_inscription__id__exact',
+            'writing_system': 'writing_system__id__exact',
+            'genre': 'genre__id__exact',
+            'tags': 'tags__id__exact',
+            'language': 'language__id__exact',
+            'panel': 'panel__id__exact',
+            'id': 'id',
+            'medium': 'panel__medium__id__exact',
+            'material': 'panel__material__exact',
+            'alignment': 'alignment__id__exact',
+            'condition': 'condition__id__exact',
+            'mentioned_person': 'mentioned_person__id__exact',
+            'panel_title_str': 'panel__title__startswith',
+            'inscription_title_str': 'title__startswith',
+        }
+
+        # Exact item selection parameters from autocomplete
+        search_mapping = {
+            'title': 'title__icontains',
+            'transcription': 'transcription__icontains',
+            'interpretative_edition': 'interpretative_edition__icontains',
+            'romanisation': 'romanisation__icontains',
+            'translation_eng': 'translation_eng__icontains',
+            'translation_ukr': 'translation_ukr__icontains',
+            'mentioned_person_name': 'mentioned_person__name__icontains',
+            'korniienko_image_title': 'korniienko_image__title__icontains',
+        }
+
+        count_all_inscriptions = models.Inscription.objects.count()
+        inscriptions = models.Inscription.objects.all()
+
+        for param, lookup in filter_mapping.items():
+            value = self.request.query_params.get(param)
+            if value:
+                inscriptions = inscriptions.filter(**{lookup: value})
+
+        # Two autocomplete modes:
+        # 1) q provided => partial text search across supported fields.
+        # 2) no q => exact field matching for selected autocomplete item(s).
+        if q:
+            inscriptions = inscriptions.filter(
+                Q(title__icontains=q) |
+                Q(panel__title__icontains=q) |
+                Q(transcription__icontains=q) |
+                Q(interpretative_edition__icontains=q) |
+                Q(romanisation__icontains=q) |
+                Q(translation_eng__icontains=q) |
+                Q(translation_ukr__icontains=q) |
+                Q(mentioned_person__name__icontains=q) |
+                Q(korniienko_image__title__icontains=q)
+            )
+        else:
+            for param, lookup in search_mapping.items():
+                value = self.request.query_params.get(param)
+                if value:
+                    inscriptions = inscriptions.filter(**{lookup: value})
+
+        inscriptions = inscriptions.distinct()
+
+        count_inscriptions_shown = inscriptions.count()
         count_hidden_inscriptions = count_all_inscriptions -  count_inscriptions_shown
         count_textual_inscriptions = inscriptions.filter(type_of_inscription__id__exact=1).count() # 1 is for textual inscriptions
         count_pictorial_inscriptions = inscriptions.filter(type_of_inscription__id__exact=2).count() # 2 is for textual inscriptions
