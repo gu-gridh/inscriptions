@@ -586,7 +586,7 @@ class DataWidgetViewSet(DynamicDepthViewSet):
             inscriptions = inscriptions.filter(panel__title__startswith=panel_title_str)
 
         if inscription_title_str:
-            inscriptions = inscriptions.filter(title__startswith=inscription_contains_str)
+            inscriptions = inscriptions.filter(title__startswith=inscription_title_str)
 
         count_inscriptions_shown = inscriptions.all().count()
         count_hidden_inscriptions = count_all_inscriptions -  count_inscriptions_shown
@@ -641,6 +641,7 @@ class SearchDataWidgetViewSet(DynamicDepthViewSet):
         # Exact item selection parameters from autocomplete
         search_mapping = {
             'title': 'title__icontains',
+            'panel': 'panel__title__icontains',
             'transcription': 'transcription__icontains',
             'interpretative_edition': 'interpretative_edition__icontains',
             'romanisation': 'romanisation__icontains',
@@ -681,7 +682,7 @@ class SearchDataWidgetViewSet(DynamicDepthViewSet):
 
         inscriptions = inscriptions.distinct()
 
-        count_inscriptions_shown = inscriptions.count()
+        count_inscriptions_shown = inscriptions.all().count()
         count_hidden_inscriptions = count_all_inscriptions -  count_inscriptions_shown
         count_textual_inscriptions = inscriptions.filter(type_of_inscription__id__exact=1).count() # 1 is for textual inscriptions
         count_pictorial_inscriptions = inscriptions.filter(type_of_inscription__id__exact=2).count() # 2 is for textual inscriptions
@@ -838,7 +839,7 @@ class SummaryViewSet(DynamicDepthViewSet):
         # Calculate average year and group by it
         avg_year_counts = (
             queryset
-            .filter(min_year__isnull=False, max_year__isnull=False, max_year__lte=200+F('min_year'))  # Only include records with both years
+            .filter(min_year__isnull=False, max_year__isnull=False, max_year__lte=F('min_year') + 200)  # Only include records with both years
             .annotate(
                 avg_year=Cast((F('min_year') + F('max_year')) / 2, IntegerField())
             )
@@ -903,4 +904,205 @@ class SummaryViewSet(DynamicDepthViewSet):
             for entry in avg_year_counts if entry["avg_year"] is not None
         ]
 
+        return summary
+    
+
+class DataSummaryViewSet(DynamicDepthViewSet):
+    """A viewset to return summary data."""
+    queryset = models.Inscription.objects.all()
+    serializer_class = serializers.SummarySerializer
+    filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
+    filterset_class = InscriptionFilter  # Use the same filter as InscriptionViewSet
+
+    def list(self, request, *args, **kwargs): 
+        # Query Parameters
+        q = (self.request.query_params.get('q') or '').strip()
+
+        # Base filter widget parameters
+        filter_mapping = {
+            'type_of_inscription': 'type_of_inscription__id__exact',
+            'writing_system': 'writing_system__id__exact',
+            'genre': 'genre__id__exact',
+            'tags': 'tags__id__exact',
+            'language': 'language__id__exact',
+            'panel': 'panel__id__exact',
+            'id': 'id',
+            'medium': 'panel__medium__id__exact',
+            'material': 'panel__material__exact',
+            'alignment': 'alignment__id__exact',
+            'condition': 'condition__id__exact',
+            'mentioned_person': 'mentioned_person__id__exact',
+            'panel_title_str': 'panel__title__startswith',
+            'inscription_title_str': 'title__startswith',
+        }
+
+        # Exact item selection parameters from autocomplete
+        search_mapping = {
+            'title': 'title__icontains',
+            'panel': 'panel__title__icontains',
+            'transcription': 'transcription__icontains',
+            'interpretative_edition': 'interpretative_edition__icontains',
+            'romanisation': 'romanisation__icontains',
+            'translation_eng': 'translation_eng__icontains',
+            'translation_ukr': 'translation_ukr__icontains',
+            'mentioned_person_name': 'mentioned_person__name__icontains',
+            'korniienko_image_title': 'korniienko_image__title__icontains',
+        }
+
+        # Filtering inscriptions (matching DataWidgetViewSet exactly)
+        inscriptions = models.Inscription.objects.all()
+        for param, lookup in filter_mapping.items():
+            value = self.request.query_params.get(param)
+            if value:
+                inscriptions = inscriptions.filter(**{lookup: value})
+        # Two autocomplete modes:
+        # 1) q provided => partial text search across supported fields.
+        # 2) no q => exact field matching for selected autocomplete item(s).
+        if q:
+            inscriptions = inscriptions.filter(
+                Q(title__icontains=q) |
+                Q(panel__title__icontains=q) |
+                Q(transcription__icontains=q) |
+                Q(interpretative_edition__icontains=q) |
+                Q(romanisation__icontains=q) |
+                Q(translation_eng__icontains=q) |
+                Q(translation_ukr__icontains=q) |
+                Q(mentioned_person__name__icontains=q) |
+                Q(korniienko_image__title__icontains=q)
+            )
+        else:
+            for param, lookup in search_mapping.items():
+                value = self.request.query_params.get(param)
+                if value:
+                    inscriptions = inscriptions.filter(**{lookup: value})
+        inscriptions = inscriptions.distinct()
+        # Generate summary with filtered inscriptions
+        summary_data = self.summarize_results(inscriptions)
+        
+        return Response(summary_data)
+    
+    def summarize_results(self, queryset):
+        """Summarizes search results by creator and institution."""
+
+        summary = {
+            "type_of_inscription": [],
+            "writing_system": [],
+            "language": [],
+            "textual_genre": [],
+            "pictorial_description": [],
+            "min_year": [],
+            "max_year": [],
+            "avg_year": [],
+        }
+
+        # Count images per creator
+        type_of_inscription_counts = (
+            queryset
+            .values("type_of_inscription__text", "type_of_inscription__text_ukr")
+            .annotate(count=Count("id", distinct=True))
+            .order_by("-count")
+        )
+
+        # Count images per institution
+        writing_system_counts = (
+            queryset
+            .values("writing_system__text", "writing_system__text_ukr")
+            .annotate(count=Count("id", distinct=True))
+            .order_by("-count")
+        )
+        # Count of documentation types by site
+        language_counts = (
+            queryset
+            .values("language__text", "language__text_ukr")
+            .annotate(count=Count("id", distinct=True))
+            .order_by("-count")
+        )
+        # Summarise search results by motif type
+        textual_genre_counts = (
+            queryset
+            .values("genre__text", "genre__text_ukr")
+            .annotate(count=Count("id", distinct=True))
+            .order_by("-count")
+        )
+        # Show number of images for each year 
+        pictorial_description_counts = (
+            queryset
+            .values("tags__text", "tags__text_ukr")
+            .annotate(count=Count("id", distinct=True))
+            .order_by("-count")
+        )
+
+        min_year_counts = (
+            queryset
+            .values("min_year")
+            .annotate(count=Count("id", distinct=True))
+            .order_by("-count")
+        )
+        max_year_counts = (
+            queryset
+            .values("max_year")
+            .annotate(count=Count("id", distinct=True))
+            .order_by("-count")
+        )
+
+        # Calculate average year and group by it
+        avg_year_counts = (
+            queryset
+            .filter(min_year__isnull=False, max_year__isnull=False, max_year__lte=F('min_year') + 200)  # Only include records with both years
+            .annotate(
+                avg_year=Cast((F('min_year') + F('max_year')) / 2, IntegerField())
+            )
+            .values("avg_year")
+            .annotate(count=Count("id", distinct=True))
+            .order_by("avg_year")
+        )   
+
+        # Format summary
+        summary["type_of_inscription"] = [
+            {
+                "type": entry["type_of_inscription__text"], 
+                "type_ukr": entry["type_of_inscription__text_ukr"], 
+                "count": entry["count"]}
+            for entry in type_of_inscription_counts if entry["type_of_inscription__text"]
+        ]   
+        summary["writing_system"] = [
+            {
+                "writing_system": entry["writing_system__text"], 
+                "writing_system_ukr": entry["writing_system__text_ukr"],
+                "count": entry["count"]}
+            for entry in writing_system_counts if entry["writing_system__text"]
+        ]   
+        summary["language"] = [
+            {
+                "language": entry["language__text"], 
+                "language_ukr": entry["language__text_ukr"],
+                "count": entry["count"]}
+            for entry in language_counts if entry["language__text"]
+        ]
+        summary["textual_genre"] = [
+            {
+                "textual_genre": entry["genre__text"], 
+                "textual_genre_ukr": entry["genre__text_ukr"],
+                "count": entry["count"]}
+            for entry in textual_genre_counts if entry["genre__text"]
+        ]
+        summary["pictorial_description"] = [
+            {
+                "pictorial_description": entry["tags__text"], 
+                "pictorial_description_ukr": entry["tags__text_ukr"],
+                "count": entry["count"]}
+            for entry in pictorial_description_counts if entry["tags__text"]
+        ]
+        summary["min_year"] = [
+            {"min_year": entry["min_year"], "count": entry["count"]}
+            for entry in min_year_counts if entry["min_year"]
+        ]
+        summary["max_year"] = [
+            {"max_year": entry["max_year"], "count": entry["count"]}
+            for entry in max_year_counts if entry["max_year"]
+        ]
+        summary["avg_year"] = [
+            {"avg_year": entry["avg_year"], "count": entry["count"]}
+            for entry in avg_year_counts if entry["avg_year"] is not None
+        ]       
         return summary

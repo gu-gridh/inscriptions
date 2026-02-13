@@ -44,6 +44,8 @@ router.register(rf'{endpoint}/data-widget', views.SearchDataWidgetViewSet, basen
 router.register(rf'{endpoint}/inscriptions-info', views.DataWidgetViewSet, basename="data for widget")
 
 router.register(rf'{endpoint}/bibliography-item', views.BibliographyItemViewSet, basename="bibliography items")
+# view for data summary including counts and statistics
+router.register(rf'{endpoint}/data-summary', views.DataSummaryViewSet, basename="data for summary statistics")
 router.register(rf'{endpoint}/summary', views.SummaryViewSet, basename="data summary")
 
 
