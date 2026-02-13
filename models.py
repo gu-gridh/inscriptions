@@ -263,6 +263,9 @@ class Panel(abstract.AbstractBaseModel):
     medium = models.ForeignKey(Medium, on_delete=models.SET_NULL, blank=True, null=True)
     material = models.ForeignKey(Material, on_delete=models.SET_NULL, blank=True, null=True)
     section = models.ForeignKey(Section, on_delete=models.SET_NULL, blank=True, null=True)
+    width = models.FloatField(blank=True, null=True, verbose_name="Width (m)")
+    height = models.FloatField(blank=True, null=True, verbose_name="Height (m)")
+    elevation = models.FloatField(blank=True, null=True, verbose_name="Eleveation (m)")
    
     documentation = models.ManyToManyField(Documentation, blank=True, verbose_name=_("documentation"), default=None)
     spatial_position = ArrayField(models.FloatField(), size=3, default=list, help_text=_("Format: 3 comma-separated float numbers, e.g.: 0.0, 1.1, 2.2"), blank=True, null=True)
