@@ -5,6 +5,7 @@ from . import models
 from saintsophia.utils import get_fields, DEFAULT_FIELDS
 from .models import *
 from django.db.models import Q
+from django.utils.html import strip_tags
 
 
 class LanguageSerializer(DynamicDepthSerializer):
@@ -200,10 +201,22 @@ class InscriptionSerializer(DynamicDepthSerializer):
     width = SerializerMethodField()
     height = SerializerMethodField()
 
+    RICH_TEXT_FIELDS = [
+        'transcription', 'interpretative_edition', 'romanisation',
+        'translation_eng', 'translation_ukr', 'comments_eng', 'comments_ukr',
+    ]
+
     class Meta:
         model = Inscription
         fields = get_fields(Inscription, exclude=DEFAULT_FIELDS)+ ['id', 'inscription_iiif_url', 'korniienko_image', 'width', 'height']
-        
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        for field in self.RICH_TEXT_FIELDS:
+            if field in data and data[field]:
+                data[field] = strip_tags(data[field]).strip()
+        return data
+
     def get_inscription_iiif_url(self, obj):
         images = obj.panel.images.filter(type_of_image=1).values() # 1 is orthophotos
         
@@ -294,6 +307,18 @@ class ObjectMesh3DSerializer(DynamicDepthSerializer):
 
 class SummarySerializer(DynamicDepthSerializer):
 
+    RICH_TEXT_FIELDS = [
+        'transcription', 'interpretative_edition', 'romanisation',
+        'translation_eng', 'translation_ukr', 'comments_eng', 'comments_ukr',
+    ]
+
     class Meta:
         model = Inscription
         fields = ['id']+get_fields(Inscription, exclude=['created_at', 'updated_at', 'inscription_iiif_url', 'korniienko_image'])
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        for field in self.RICH_TEXT_FIELDS:
+            if field in data and data[field]:
+                data[field] = strip_tags(data[field]).strip()
+        return data
