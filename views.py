@@ -5,6 +5,7 @@ from django.db.models.functions import Cast
 from saintsophia.abstract.views import DynamicDepthViewSet, GeoViewSet
 from saintsophia.abstract.models import get_fields, DEFAULT_FIELDS
 from django.http import HttpResponse
+from django.utils.html import strip_tags
 import json
 import django_filters
 from rest_framework.response import Response
@@ -281,7 +282,7 @@ class AutoCompleteInscriptionViewSet(ViewSet):
                     continue
                 value, inscription_id = row
                 if value:
-                    val_str = str(value).strip()
+                    val_str = strip_tags(str(value)).strip()
                     val_key = val_str.lower()
                     if q in val_key and val_key not in seen:
                         key = (val_str, label)
