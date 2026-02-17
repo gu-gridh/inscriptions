@@ -230,7 +230,7 @@ class PanelInfoViewSet(DynamicDepthViewSet):
             'hidden_panels': hidden_panels,
         }
 
-        return HttpResponse(json.dumps(data, ensure_ascii=False), content_type='application/json')
+        return HttpResponse(json.dumps(data))
     
     
 class PanelStringViewSet(DynamicDepthViewSet):
@@ -659,7 +659,7 @@ class DataWidgetViewSet(DynamicDepthViewSet):
             'composites_inscriptions': count_composite_inscriptions
         }
 
-        return HttpResponse(json.dumps(data, ensure_ascii=False), content_type='application/json')
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
 class SearchDataWidgetViewSet(DynamicDepthViewSet):
     """ 
