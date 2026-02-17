@@ -659,7 +659,7 @@ class DataWidgetViewSet(DynamicDepthViewSet):
             'composites_inscriptions': count_composite_inscriptions
         }
 
-        return HttpResponse(json.dumps(data), content_type='application/json')
+        return HttpResponse(json.dumps(data))
 
 class SearchDataWidgetViewSet(DynamicDepthViewSet):
     """ 
