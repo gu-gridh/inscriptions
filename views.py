@@ -1,15 +1,78 @@
 from unittest.mock import DEFAULT
 from . import models, serializers
-from django.db.models import Q, Value, Case, When, Count, F, IntegerField
+from django.db.models import Q, Value, Case, When, Count, F, IntegerField, Func, TextField
 from django.db.models.functions import Cast
 from saintsophia.abstract.views import DynamicDepthViewSet, GeoViewSet
 from saintsophia.abstract.models import get_fields, DEFAULT_FIELDS
 from django.http import HttpResponse
 from django.utils.html import strip_tags
+import html as html_module
 import json
 import django_filters
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
+
+
+class StripHTML(Func):
+    """PostgreSQL function to strip HTML tags from a text field using REGEXP_REPLACE."""
+    function = 'REGEXP_REPLACE'
+    template = "%(function)s(COALESCE(%(expressions)s, ''), '<[^>]*>', '', 'g')"
+    output_field = TextField()
+
+
+# RichText fields on Inscription that are searched with free-text queries
+_RICH_TEXT_FIELDS = [
+    'transcription', 'interpretative_edition', 'romanisation',
+    'translation_eng', 'translation_ukr',
+]
+
+
+def _annotate_clean_fields(queryset):
+    """Annotate the queryset with HTML-stripped versions of RichText fields."""
+    annotations = {f'clean_{f}': StripHTML(f) for f in _RICH_TEXT_FIELDS}
+    return queryset.annotate(**annotations)
+
+
+def _to_html_entities(text):
+    """Convert a Unicode string to its HTML named-entity equivalent.
+    
+    CKEditor stores Greek / Cyrillic / other non-ASCII text as HTML named
+    entities (e.g. &delta;&omicron;&upsilon;...).  To let users search in
+    their native script we convert the search term to the same form so we
+    can match against the raw DB content as well.
+    """
+    return ''.join(
+        f'&{html_module.entities.codepoint2name[ord(ch)]};'
+        if ord(ch) in html_module.entities.codepoint2name
+        else ch
+        for ch in text
+    )
+
+
+def _build_search_q(search_term):
+    """Build a Q filter that searches plain-text fields normally and RichText
+    fields via both the Unicode search term AND its HTML-entity equivalent
+    so that Greek / Church Slavonic / etc. characters match the entity-encoded
+    content stored by CKEditor."""
+    entity_term = _to_html_entities(search_term)
+
+    # For plain-text fields just use the original term
+    q = (
+        Q(title__icontains=search_term) |
+        Q(panel__title__icontains=search_term) |
+        Q(mentioned_person__name__icontains=search_term) |
+        Q(korniienko_image__title__icontains=search_term)
+    )
+
+    # For RichText fields search both the Unicode term (against the
+    # tag-stripped annotation) AND the entity-encoded term (against the raw
+    # DB column) so we cover both storage styles.
+    for field in _RICH_TEXT_FIELDS:
+        q |= Q(**{f'clean_{field}__icontains': search_term})
+        if entity_term != search_term:
+            q |= Q(**{f'{field}__icontains': entity_term})
+
+    return q
 
 
 class TagViewSet(DynamicDepthViewSet):
@@ -167,7 +230,7 @@ class PanelInfoViewSet(DynamicDepthViewSet):
             'hidden_panels': hidden_panels,
         }
 
-        return HttpResponse(json.dumps(data))
+        return HttpResponse(json.dumps(data, ensure_ascii=False), content_type='application/json')
     
     
 class PanelStringViewSet(DynamicDepthViewSet):
@@ -235,20 +298,12 @@ class SearchInscriptionViewSet(DynamicDepthViewSet):
     serializer_class = serializers.InscriptionSerializer
 
     def get_queryset(self):
-        queryset = models.Inscription.objects.all()
+        queryset = _annotate_clean_fields(models.Inscription.objects.all())
         search_term = self.request.query_params.get('q', None)
         
         if search_term:
             queryset = queryset.filter(
-                Q(title__icontains=search_term) |
-                Q(panel__title__icontains=search_term) |
-                Q(transcription__icontains=search_term) |
-                Q(interpretative_edition__icontains=search_term) |
-                Q(romanisation__icontains=search_term) |
-                Q(translation_eng__icontains=search_term) |
-                Q(translation_ukr__icontains=search_term) |
-                Q(mentioned_person__name__icontains=search_term) |
-                Q(korniienko_image__title__icontains=search_term)
+                _build_search_q(search_term)
             ).order_by('korniienko_image__title')
 
         return queryset.distinct()
@@ -274,6 +329,7 @@ class AutoCompleteInscriptionViewSet(ViewSet):
     
         limit = 10  # Limit the number of results for autocomplete
         suggestions = {}  # (value, source) -> set(ids)
+        entity_q = _to_html_entities(q)
 
         def add_suggestions(filtered_qs, label):
             seen = set()
@@ -282,15 +338,15 @@ class AutoCompleteInscriptionViewSet(ViewSet):
                     continue
                 value, inscription_id = row
                 if value:
-                    val_str = strip_tags(str(value)).strip()
+                    val_str = html_module.unescape(strip_tags(str(value))).strip()
                     val_key = val_str.lower()
                     if q in val_key and val_key not in seen:
                         key = (val_str, label)
                         suggestions.setdefault(key, set()).add(inscription_id)
                         seen.add(val_key)
 
-        # Search in various fields
-        inscriptions = models.Inscription.objects.all()
+        # Search in various fields, using both Unicode and HTML-entity forms for RichText fields
+        inscriptions = _annotate_clean_fields(models.Inscription.objects.all())
         add_suggestions(
             inscriptions.filter(title__icontains=q).values_list('title', 'id').distinct()[:limit],
             'Title'
@@ -299,26 +355,24 @@ class AutoCompleteInscriptionViewSet(ViewSet):
             inscriptions.filter(panel__title__icontains=q).values_list('panel__title', 'id').distinct()[:limit],
             'Panel Title'
         )
-        add_suggestions(
-            inscriptions.filter(transcription__icontains=q).values_list('transcription', 'id').distinct()[:limit],
-            'Transcription'
-        )
-        add_suggestions(
-            inscriptions.filter(interpretative_edition__icontains=q).values_list('interpretative_edition', 'id').distinct()[:limit],
-            'Interpretative Edition'
-        )
-        add_suggestions(
-            inscriptions.filter(romanisation__icontains=q).values_list('romanisation', 'id').distinct()[:limit],
-            'Romanisation'
-        )
-        add_suggestions(
-            inscriptions.filter(translation_eng__icontains=q).values_list('translation_eng', 'id').distinct()[:limit],
-            'Translation (ENG)'
-        )
-        add_suggestions(
-            inscriptions.filter(translation_ukr__icontains=q).values_list('translation_ukr', 'id').distinct()[:limit],
-            'Translation (UKR)'
-        )
+
+        # RichText fields: search with clean annotation (Unicode) OR raw field (entity-encoded)
+        for field, label in [
+            ('transcription', 'Transcription'),
+            ('interpretative_edition', 'Interpretative Edition'),
+            ('romanisation', 'Romanisation'),
+            ('translation_eng', 'Translation (ENG)'),
+            ('translation_ukr', 'Translation (UKR)'),
+        ]:
+            clean = f'clean_{field}'
+            filt = Q(**{f'{clean}__icontains': q})
+            if entity_q != q:
+                filt |= Q(**{f'{field}__icontains': entity_q})
+            add_suggestions(
+                inscriptions.filter(filt).values_list(clean, 'id').distinct()[:limit],
+                label,
+            )
+
         add_suggestions(
             inscriptions.filter(mentioned_person__name__icontains=q).values_list('mentioned_person__name', 'id').distinct()[:limit],
             'Mentioned Person'
@@ -605,7 +659,7 @@ class DataWidgetViewSet(DynamicDepthViewSet):
             'composites_inscriptions': count_composite_inscriptions
         }
 
-        return HttpResponse(json.dumps(data))
+        return HttpResponse(json.dumps(data, ensure_ascii=False), content_type='application/json')
 
 class SearchDataWidgetViewSet(DynamicDepthViewSet):
     """ 
@@ -653,7 +707,7 @@ class SearchDataWidgetViewSet(DynamicDepthViewSet):
         }
 
         count_all_inscriptions = models.Inscription.objects.count()
-        inscriptions = models.Inscription.objects.all()
+        inscriptions = _annotate_clean_fields(models.Inscription.objects.all())
 
         for param, lookup in filter_mapping.items():
             value = self.request.query_params.get(param)
@@ -664,17 +718,7 @@ class SearchDataWidgetViewSet(DynamicDepthViewSet):
         # 1) q provided => partial text search across supported fields.
         # 2) no q => exact field matching for selected autocomplete item(s).
         if q:
-            inscriptions = inscriptions.filter(
-                Q(title__icontains=q) |
-                Q(panel__title__icontains=q) |
-                Q(transcription__icontains=q) |
-                Q(interpretative_edition__icontains=q) |
-                Q(romanisation__icontains=q) |
-                Q(translation_eng__icontains=q) |
-                Q(translation_ukr__icontains=q) |
-                Q(mentioned_person__name__icontains=q) |
-                Q(korniienko_image__title__icontains=q)
-            )
+            inscriptions = inscriptions.filter(_build_search_q(q))
         else:
             for param, lookup in search_mapping.items():
                 value = self.request.query_params.get(param)
@@ -696,7 +740,7 @@ class SearchDataWidgetViewSet(DynamicDepthViewSet):
             'pictorial_inscriptions': count_pictorial_inscriptions,
             'composites_inscriptions': count_composite_inscriptions
         }
-        return HttpResponse(json.dumps(data))
+        return HttpResponse(json.dumps(data, ensure_ascii=False), content_type='application/json')
 
 class SummaryViewSet(DynamicDepthViewSet):
     """A separate viewset to return summary data for inscriptions."""
@@ -951,7 +995,7 @@ class DataSummaryViewSet(DynamicDepthViewSet):
         }
 
         # Filtering inscriptions (matching DataWidgetViewSet exactly)
-        inscriptions = models.Inscription.objects.all()
+        inscriptions = _annotate_clean_fields(models.Inscription.objects.all())
         for param, lookup in filter_mapping.items():
             value = self.request.query_params.get(param)
             if value:
@@ -960,17 +1004,7 @@ class DataSummaryViewSet(DynamicDepthViewSet):
         # 1) q provided => partial text search across supported fields.
         # 2) no q => exact field matching for selected autocomplete item(s).
         if q:
-            inscriptions = inscriptions.filter(
-                Q(title__icontains=q) |
-                Q(panel__title__icontains=q) |
-                Q(transcription__icontains=q) |
-                Q(interpretative_edition__icontains=q) |
-                Q(romanisation__icontains=q) |
-                Q(translation_eng__icontains=q) |
-                Q(translation_ukr__icontains=q) |
-                Q(mentioned_person__name__icontains=q) |
-                Q(korniienko_image__title__icontains=q)
-            )
+            inscriptions = inscriptions.filter(_build_search_q(q))
         else:
             for param, lookup in search_mapping.items():
                 value = self.request.query_params.get(param)

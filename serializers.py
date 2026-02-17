@@ -6,6 +6,7 @@ from saintsophia.utils import get_fields, DEFAULT_FIELDS
 from .models import *
 from django.db.models import Q
 from django.utils.html import strip_tags
+import html
 
 
 class LanguageSerializer(DynamicDepthSerializer):
@@ -214,7 +215,7 @@ class InscriptionSerializer(DynamicDepthSerializer):
         data = super().to_representation(instance)
         for field in self.RICH_TEXT_FIELDS:
             if field in data and data[field]:
-                data[field] = strip_tags(data[field]).strip()
+                data[field] = html.unescape(strip_tags(data[field])).strip()
         return data
 
     def get_inscription_iiif_url(self, obj):
@@ -320,5 +321,5 @@ class SummarySerializer(DynamicDepthSerializer):
         data = super().to_representation(instance)
         for field in self.RICH_TEXT_FIELDS:
             if field in data and data[field]:
-                data[field] = strip_tags(data[field]).strip()
+                data[field] = html.unescape(strip_tags(data[field])).strip()
         return data
