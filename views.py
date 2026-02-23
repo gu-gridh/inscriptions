@@ -332,7 +332,7 @@ class AutoCompleteInscriptionViewSet(ViewSet):
         entity_q = _to_html_entities(q)
 
         def add_suggestions(filtered_qs, label):
-            seen = set()
+            seen = {}  # val_key -> canonical val_str
             for row in filtered_qs:
                 if not row:
                     continue
@@ -340,10 +340,13 @@ class AutoCompleteInscriptionViewSet(ViewSet):
                 if value:
                     val_str = html_module.unescape(strip_tags(str(value))).strip()
                     val_key = val_str.lower()
-                    if q in val_key and val_key not in seen:
-                        key = (val_str, label)
+                    if q in val_key:
+                        # Use the first-seen casing for the display string
+                        if val_key not in seen:
+                            seen[val_key] = val_str
+                        canonical = seen[val_key]
+                        key = (canonical, label)
                         suggestions.setdefault(key, set()).add(inscription_id)
-                        seen.add(val_key)
 
         # Search in various fields, using both Unicode and HTML-entity forms for RichText fields
         inscriptions = _annotate_clean_fields(models.Inscription.objects.all())
