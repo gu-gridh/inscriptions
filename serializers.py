@@ -7,6 +7,55 @@ from .models import *
 from django.db.models import Q
 from django.utils.html import strip_tags
 import html
+import re
+
+_BR_RE = re.compile(r'<br\s*/?>', re.IGNORECASE)
+_BLOCK_RE = re.compile(r'</?(p|div)\s*/?>', re.IGNORECASE)
+_TAG_RE = re.compile(r'</?([a-zA-Z0-9]+)(?:\s[^>]*)?>')
+_SCRIPT_STYLE_RE = re.compile(r'<(script|style)\b[^>]*>.*?</\1>', re.IGNORECASE | re.DOTALL)
+_COMMENT_RE = re.compile(r'<!--.*?-->', re.DOTALL)
+
+
+def _clean_rich_text_keep_p_br(value):
+    """Strip HTML while preserving only normalized <p> and <br /> tags."""
+    if not value:
+        return value
+
+    value = html.unescape(value)
+    value = _SCRIPT_STYLE_RE.sub('', value)
+    value = _COMMENT_RE.sub('', value)
+
+    def _replace_tag(match):
+        raw = match.group(0)
+        tag_name = match.group(1).lower()
+
+        if tag_name == 'p':
+            return '</p>' if raw.lstrip().startswith('</') else '<p>'
+        if tag_name == 'br':
+            return '<br />'
+        return ''
+
+    return _TAG_RE.sub(_replace_tag, value).strip()
+
+
+def _clean_rich_text(value, preserve_breaks=False, preserve_tags=False):
+    """Strip HTML tags and decode entities from a RichText value.
+
+    When *preserve_breaks* is True, ``<br>`` tags and block boundaries
+    (``<p>``, ``</p>``, ``<div>``, …) are converted to newline characters
+    before the remaining markup is removed.
+
+    When *preserve_tags* is True, all HTML is stripped except ``<p>``
+    and ``<br />`` tags (normalized output).
+    """
+    if not value:
+        return value
+    if preserve_tags:
+        return _clean_rich_text_keep_p_br(value)
+    if preserve_breaks:
+        value = _BR_RE.sub('\n', value)
+        value = _BLOCK_RE.sub('\n', value)
+    return html.unescape(strip_tags(value)).strip()
 
 
 class LanguageSerializer(DynamicDepthSerializer):
@@ -206,7 +255,8 @@ class InscriptionSerializer(DynamicDepthSerializer):
         'transcription', 'interpretative_edition', 'romanisation',
         'translation_eng', 'translation_ukr', 'comments_eng', 'comments_ukr',
     ]
-
+    # fields where only <p> and <br /> should be preserved
+    PRESERVE_BREAKS_FIELDS = ['transcription', 'interpretative_edition', 'translation_eng', 'translation_ukr']
     class Meta:
         model = Inscription
         fields = get_fields(Inscription, exclude=DEFAULT_FIELDS)+ ['id', 'inscription_iiif_url', 'korniienko_image', 'width', 'height']
@@ -215,7 +265,10 @@ class InscriptionSerializer(DynamicDepthSerializer):
         data = super().to_representation(instance)
         for field in self.RICH_TEXT_FIELDS:
             if field in data and data[field]:
-                data[field] = html.unescape(strip_tags(data[field])).strip()
+                data[field] = _clean_rich_text(
+                    data[field],
+                    preserve_tags=field in self.PRESERVE_BREAKS_FIELDS,
+                )
         return data
 
     def get_inscription_iiif_url(self, obj):
@@ -312,6 +365,7 @@ class SummarySerializer(DynamicDepthSerializer):
         'transcription', 'interpretative_edition', 'romanisation',
         'translation_eng', 'translation_ukr', 'comments_eng', 'comments_ukr',
     ]
+    PRESERVE_BREAKS_FIELDS = ['transcription']
 
     class Meta:
         model = Inscription
@@ -321,5 +375,8 @@ class SummarySerializer(DynamicDepthSerializer):
         data = super().to_representation(instance)
         for field in self.RICH_TEXT_FIELDS:
             if field in data and data[field]:
-                data[field] = html.unescape(strip_tags(data[field])).strip()
+                data[field] = _clean_rich_text(
+                    data[field],
+                    preserve_breaks=field in self.PRESERVE_BREAKS_FIELDS,
+                )
         return data
