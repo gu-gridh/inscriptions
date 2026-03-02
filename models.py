@@ -5,6 +5,30 @@ from ckeditor.fields import RichTextField
 from django.utils.translation import gettext_lazy as _
 from saintsophia.storages import OriginalFileStorage
 from django.contrib.postgres.fields import ArrayField
+from django.core.exceptions import ValidationError
+from lxml import etree
+
+def validate_position_on_surface(value):
+    try:
+        prefix, values = value.split(":")
+        if prefix != "pct":
+            raise ValidationError("Position on surface must start with 'pct:'")
+        parts = values.split(",")
+        if len(parts) != 4:
+            raise ValidationError("Position on surface must contain 4 comma-separated values after 'pct:'")
+        for part in parts:
+            float(part)
+    except ValueError:
+        raise ValidationError("Position on surface must have 4 numeric values after 'pct:'")
+    
+
+def validate_epidoc_xml(value: str):
+    if not value:
+        return
+    try:
+        etree.fromstring(value.encode("utf-8"))
+    except etree.XMLSyntaxError as exc:
+        raise ValidationError(f"Invalid XML: {exc}") from exc
 
 # DEFINE TAG MODELS
 
@@ -311,7 +335,7 @@ class Panel(abstract.AbstractBaseModel):
 
 class Inscription(abstract.AbstractBaseModel):
     # metadata
-    position_on_surface = models.CharField(max_length=128, blank=True, null=True, verbose_name=_("Position on surface"), help_text=_("Position on the surface (PASTE HERE LINK COPIED IN CLIPBOARD)"))
+    position_on_surface = models.CharField(max_length=128, blank=True, null=True, verbose_name=_("Position on surface"), help_text=_("Position on the surface (PASTE HERE LINK COPIED IN CLIPBOARD)"), validators=[validate_position_on_surface])
     title = models.CharField(max_length=256, null=True, blank=True, verbose_name=_("Alternative title"), help_text=_("Fill in if the inscription is known by an alternative name"))
     panel = models.ForeignKey(Panel, on_delete=models.CASCADE, blank=True, null=True, related_name="inscriptions", verbose_name=_("Surface"))
     
@@ -329,8 +353,10 @@ class Inscription(abstract.AbstractBaseModel):
     dating_criteria = models.ManyToManyField(DatingCriterium, blank=True)
     
     # graffiti data
-    # Epidoc field
-    epidoc_text = models.TextField(null=True, blank=True, verbose_name=_("EpiDoc XML"), help_text=_("EpiDoc XML representation of the inscription"))
+    # Epidoc fields
+    epidoc_text = models.TextField(null=True, blank=True, verbose_name=_("EpiDoc XML"), help_text=_("EpiDoc XML representation of the inscription transcription"), validators=[validate_epidoc_xml])
+    epidoc_interpretation = models.TextField(null=True, blank=True, verbose_name=_("EpiDoc XML for interpretation"), help_text=_("EpiDoc XML representation of the inscription interpretation"), validators=[validate_epidoc_xml])
+
     transcription = RichTextField(null=True, blank=True, verbose_name=_("Textual graffiti"), help_text=_("Transcription of the graffiti"))
     interpretative_edition = RichTextField(null=True, blank=True, help_text=_("Interpretation of the graffiti"))
     romanisation = RichTextField(null=True, blank=True, help_text=_("Romanisation of the graffiti"))
@@ -350,13 +376,22 @@ class Inscription(abstract.AbstractBaseModel):
     bibliography = models.ManyToManyField(BibliographyItem, blank=True, help_text=_("Add bibliography items"), related_name="inscriptions")
     author = models.ManyToManyField(Author, blank=True, verbose_name=_("Contributors"), help_text=_("List of authors for this inscription"))
     
+    # Position of surface should follow something like this format: pct:9.27,61.42,4.70,2.45
+    def clean(self):
+        super().clean()
+        if self.position_on_surface:
+            validate_position_on_surface(self.position_on_surface)
     
+    def save(self, *args, **kwargs):
+        self.full_clean()  # This will call the clean() method and validate the position_on_surface
+        super().save(*args, **kwargs)
+            
+
     def __str__(self) -> str:
         if (self.title) is not None:
             return f"Inscription {self.panel.title}:{self.id} ({self.title})"
         else:
             return f"Inscription {self.panel.title}:{self.id}"
-    
 
     class Meta:
         verbose_name = _("Inscription")
