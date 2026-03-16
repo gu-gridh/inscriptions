@@ -110,7 +110,8 @@ class HistoricalPerson(admin.ModelAdmin):
 @admin.register(BibliographyItem)
 class BibliographyItemAdmin(admin.ModelAdmin):
     list_display = ['title', 'authors', 'year']
-    search_fields = ['title', 'authors', 'year']    
+    search_fields = ['title', 'authors', 'year']  
+    list_filter = ['authors', 'year']  
 
 
 @admin.register(Documentation)
@@ -128,7 +129,14 @@ class PanelAdmin(LeafletGeoAdmin, admin.ModelAdmin):
     list_display = ['title', 'room', 'data_available']
     search_fields = ['title', 'room']
     filter_horizontal = ['tags']
-    list_filter = [ ('spatial_position', EmptyFieldListFilter), ('spatial_direction', EmptyFieldListFilter), ("data_available")]
+    list_filter = [ ('spatial_position', EmptyFieldListFilter),
+                    ('spatial_direction', EmptyFieldListFilter),
+                    ("data_available"),
+                    ('room'),
+                    ('material'),
+                    ('medium'),
+                    ('tags'),
+                    ('documentation'),]
     
     settings_overrides = {
        'DEFAULT_CENTER': (DEFAULT_LATITUDE, DEFAULT_LONGITUDE),
@@ -148,7 +156,11 @@ class InscriptionAdmin(admin.ModelAdmin,):
     list_display = ['panel', 'id', 'language', 'title']
     search_fields = ['title', 'id', 'language__text', 'panel__title']
     autocomplete_fields = ['panel', 'inscriber']
-
+    list_filter = ['panel__title',
+                   'panel__room',
+                   'language',
+                   'writing_system', 
+                   'genre']
     change_form_template = 'apps/inscriptions/inscription_change_form.html'
 
 
@@ -174,6 +186,10 @@ class KorniienkoImageAdmin(admin.ModelAdmin):
     readonly_fields= [*DEFAULT_FIELDS]
     autocomplete_fields = ['inscription']
     list_display = ['inscription', 'type_of_image']
+    list_filter = ['inscription__panel__title', 
+                   'type_of_image',
+                   'inscription__panel__room',
+                   'author']
     search_fields = ['inscription__title', 'url']
     
 

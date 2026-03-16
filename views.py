@@ -1,13 +1,78 @@
 from unittest.mock import DEFAULT
 from . import models, serializers
-from django.db.models import Q, Value, Case, When, Count, F, IntegerField
+from django.db.models import Q, Value, Case, When, Count, F, IntegerField, Func, TextField
 from django.db.models.functions import Cast
 from saintsophia.abstract.views import DynamicDepthViewSet, GeoViewSet
 from saintsophia.abstract.models import get_fields, DEFAULT_FIELDS
 from django.http import HttpResponse
+from django.utils.html import strip_tags
+import html as html_module
 import json
 import django_filters
 from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
+
+
+class StripHTML(Func):
+    """PostgreSQL function to strip HTML tags from a text field using REGEXP_REPLACE."""
+    function = 'REGEXP_REPLACE'
+    template = "%(function)s(COALESCE(%(expressions)s, ''), '<[^>]*>', '', 'g')"
+    output_field = TextField()
+
+
+# RichText fields on Inscription that are searched with free-text queries
+_RICH_TEXT_FIELDS = [
+    'transcription', 'interpretative_edition', 'romanisation',
+    'translation_eng', 'translation_ukr',
+]
+
+
+def _annotate_clean_fields(queryset):
+    """Annotate the queryset with HTML-stripped versions of RichText fields."""
+    annotations = {f'clean_{f}': StripHTML(f) for f in _RICH_TEXT_FIELDS}
+    return queryset.annotate(**annotations)
+
+
+def _to_html_entities(text):
+    """Convert a Unicode string to its HTML named-entity equivalent.
+    
+    CKEditor stores Greek / Cyrillic / other non-ASCII text as HTML named
+    entities (e.g. &delta;&omicron;&upsilon;...).  To let users search in
+    their native script we convert the search term to the same form so we
+    can match against the raw DB content as well.
+    """
+    return ''.join(
+        f'&{html_module.entities.codepoint2name[ord(ch)]};'
+        if ord(ch) in html_module.entities.codepoint2name
+        else ch
+        for ch in text
+    )
+
+
+def _build_search_q(search_term):
+    """Build a Q filter that searches plain-text fields normally and RichText
+    fields via both the Unicode search term AND its HTML-entity equivalent
+    so that Greek / Church Slavonic / etc. characters match the entity-encoded
+    content stored by CKEditor."""
+    entity_term = _to_html_entities(search_term)
+
+    # For plain-text fields just use the original term
+    q = (
+        Q(title__icontains=search_term) |
+        Q(panel__title__icontains=search_term) |
+        Q(mentioned_person__name__icontains=search_term) |
+        Q(korniienko_image__title__icontains=search_term)
+    )
+
+    # For RichText fields search both the Unicode term (against the
+    # tag-stripped annotation) AND the entity-encoded term (against the raw
+    # DB column) so we cover both storage styles.
+    for field in _RICH_TEXT_FIELDS:
+        q |= Q(**{f'clean_{field}__icontains': search_term})
+        if entity_term != search_term:
+            q |= Q(**{f'{field}__icontains': entity_term})
+
+    return q
 
 
 class TagViewSet(DynamicDepthViewSet):
@@ -226,7 +291,117 @@ class InscriptionViewSet(DynamicDepthViewSet):
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     filterset_class = InscriptionFilter
     # filterset_fields = get_fields(models.Inscription, exclude=DEFAULT_FIELDS)
+
+
+# Search by multiple text fields as well as  korniienko number and panel title
+class SearchInscriptionViewSet(DynamicDepthViewSet):
+    serializer_class = serializers.InscriptionSerializer
+
+    def get_queryset(self):
+        queryset = _annotate_clean_fields(models.Inscription.objects.all())
+        search_term = self.request.query_params.get('q', None)
+        
+        if search_term:
+            queryset = queryset.filter(
+                _build_search_q(search_term)
+            ).order_by('korniienko_image__title')
+
+        return queryset.distinct()
     
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+    filterset_class = InscriptionFilter
+
+class AutoCompleteInscriptionViewSet(ViewSet):
+    """
+        Returns inscriptions that start with a given string based on search fields, 
+        for autocomplete purposes.
+        We also need to add ids to be able to link the suggestions to the actual inscription.
+        """
+
+    def list(self, request, *args, **kwargs):
+        q = request.query_params.get('q')
+        if not q:
+            return Response([])
+
+        q = q.strip().lower()
+        if not q:
+            return Response([])
+    
+        limit = 10  # Limit the number of results for autocomplete
+        suggestions = {}  # (value, source) -> set(ids)
+        entity_q = _to_html_entities(q)
+
+        def add_suggestions(filtered_qs, label):
+            seen = {}  # val_key -> canonical val_str
+            for row in filtered_qs:
+                if not row:
+                    continue
+                value, inscription_id = row
+                if value:
+                    val_str = html_module.unescape(strip_tags(str(value))).strip()
+                    val_key = val_str.lower()
+                    if q in val_key:
+                        # Use the first-seen casing for the display string
+                        if val_key not in seen:
+                            seen[val_key] = val_str
+                        canonical = seen[val_key]
+                        key = (canonical, label)
+                        suggestions.setdefault(key, set()).add(inscription_id)
+
+        # Search in various fields, using both Unicode and HTML-entity forms for RichText fields
+        inscriptions = _annotate_clean_fields(models.Inscription.objects.all())
+        add_suggestions(
+            inscriptions.filter(title__icontains=q).values_list('title', 'id').distinct()[:limit],
+            'Title'
+        )
+        add_suggestions(
+            inscriptions.filter(panel__title__icontains=q).values_list('panel__title', 'id').distinct()[:limit],
+            'Panel Title'
+        )
+
+        # RichText fields: search with clean annotation (Unicode) OR raw field (entity-encoded)
+        for field, label in [
+            ('transcription', 'Transcription'),
+            ('interpretative_edition', 'Interpretative Edition'),
+            ('romanisation', 'Romanisation'),
+            ('translation_eng', 'Translation (ENG)'),
+            ('translation_ukr', 'Translation (UKR)'),
+        ]:
+            clean = f'clean_{field}'
+            filt = Q(**{f'{clean}__icontains': q})
+            if entity_q != q:
+                filt |= Q(**{f'{field}__icontains': entity_q})
+            add_suggestions(
+                inscriptions.filter(filt).values_list(clean, 'id').distinct()[:limit],
+                label,
+            )
+
+        add_suggestions(
+            inscriptions.filter(mentioned_person__name__icontains=q).values_list('mentioned_person__name', 'id').distinct()[:limit],
+            'Mentioned Person'
+        )
+        add_suggestions(
+            inscriptions.filter(korniienko_image__title__icontains=q).values_list('korniienko_image__title', 'id').distinct()[:limit],
+            'Korniienko Image Title'
+        )   
+
+        # Limit the total number of suggestions
+                # duplicate and sort
+        sorted_suggestions = sorted(
+            [
+                {
+                    "value": value,
+                    "source": source,
+                    "ids": sorted(list(ids)),
+                    # **({"id": next(iter(ids))} if len(ids) == 1 else {})
+                }
+                for (value, source), ids in suggestions.items()
+            ],
+            key=lambda x: x["value"]
+        )[:20]
+
+        return Response(sorted_suggestions)
+
 
 class InscriptionTagsViewSet(DynamicDepthViewSet):
     queryset = models.Inscription.objects.all().order_by('id')
@@ -472,7 +647,7 @@ class DataWidgetViewSet(DynamicDepthViewSet):
             inscriptions = inscriptions.filter(panel__title__startswith=panel_title_str)
 
         if inscription_title_str:
-            inscriptions = inscriptions.filter(title__startswith=inscription_contains_str)
+            inscriptions = inscriptions.filter(title__startswith=inscription_title_str)
 
         count_inscriptions_shown = inscriptions.all().count()
         count_hidden_inscriptions = count_all_inscriptions -  count_inscriptions_shown
@@ -492,6 +667,86 @@ class DataWidgetViewSet(DynamicDepthViewSet):
 
         return HttpResponse(json.dumps(data))
 
+class SearchDataWidgetViewSet(DynamicDepthViewSet):
+    """ 
+        Same as DataWidgetViewSet but includes search parameters including:
+        transcription, interpretative edition, romanisation, translations, 
+        mentioned person and korniienko image title. 
+        This is to be used for the search widget
+    """
+    queryset = models.Inscription.objects.all()
+    serializer_class = serializers.InscriptionSerializer
+
+    def list(self, request, *args, **kwargs): 
+        # Query Parameters
+        q = (self.request.query_params.get('q') or '').strip()
+
+        # Base filter widget parameters
+        filter_mapping = {
+            'type_of_inscription': 'type_of_inscription__id__exact',
+            'writing_system': 'writing_system__id__exact',
+            'genre': 'genre__id__exact',
+            'tags': 'tags__id__exact',
+            'language': 'language__id__exact',
+            'panel': 'panel__id__exact',
+            'id': 'id',
+            'medium': 'panel__medium__id__exact',
+            'material': 'panel__material__exact',
+            'alignment': 'alignment__id__exact',
+            'condition': 'condition__id__exact',
+            'mentioned_person': 'mentioned_person__id__exact',
+            'panel_title_str': 'panel__title__startswith',
+            'inscription_title_str': 'title__startswith',
+        }
+
+        # Exact item selection parameters from autocomplete
+        search_mapping = {
+            'title': 'title__icontains',
+            'panel': 'panel__title__icontains',
+            'transcription': 'transcription__icontains',
+            'interpretative_edition': 'interpretative_edition__icontains',
+            'romanisation': 'romanisation__icontains',
+            'translation_eng': 'translation_eng__icontains',
+            'translation_ukr': 'translation_ukr__icontains',
+            'mentioned_person_name': 'mentioned_person__name__icontains',
+            'korniienko_image_title': 'korniienko_image__title__icontains',
+        }
+
+        count_all_inscriptions = models.Inscription.objects.count()
+        inscriptions = _annotate_clean_fields(models.Inscription.objects.all())
+
+        for param, lookup in filter_mapping.items():
+            value = self.request.query_params.get(param)
+            if value:
+                inscriptions = inscriptions.filter(**{lookup: value})
+
+        # Two autocomplete modes:
+        # 1) q provided => partial text search across supported fields.
+        # 2) no q => exact field matching for selected autocomplete item(s).
+        if q:
+            inscriptions = inscriptions.filter(_build_search_q(q))
+        else:
+            for param, lookup in search_mapping.items():
+                value = self.request.query_params.get(param)
+                if value:
+                    inscriptions = inscriptions.filter(**{lookup: value})
+
+        inscriptions = inscriptions.distinct()
+
+        count_inscriptions_shown = inscriptions.all().count()
+        count_hidden_inscriptions = count_all_inscriptions -  count_inscriptions_shown
+        count_textual_inscriptions = inscriptions.filter(type_of_inscription__id__exact=1).count() # 1 is for textual inscriptions
+        count_pictorial_inscriptions = inscriptions.filter(type_of_inscription__id__exact=2).count() # 2 is for textual inscriptions
+        count_composite_inscriptions = inscriptions.filter(type_of_inscription__id__exact=3).count() # 3 is for textual inscriptions
+        data = {
+            'all_inscriptions': count_all_inscriptions,
+            'shown_inscriptions': count_inscriptions_shown,
+            'hidden_inscriptions': count_hidden_inscriptions,                   
+            'textual_inscriptions': count_textual_inscriptions,
+            'pictorial_inscriptions': count_pictorial_inscriptions,
+            'composites_inscriptions': count_composite_inscriptions
+        }
+        return HttpResponse(json.dumps(data, ensure_ascii=False), content_type='application/json')
 
 class SummaryViewSet(DynamicDepthViewSet):
     """A separate viewset to return summary data for inscriptions."""
@@ -635,7 +890,7 @@ class SummaryViewSet(DynamicDepthViewSet):
         # Calculate average year and group by it
         avg_year_counts = (
             queryset
-            .filter(min_year__isnull=False, max_year__isnull=False, max_year__lte=200+F('min_year'))  # Only include records with both years
+            .filter(min_year__isnull=False, max_year__isnull=False, max_year__lte=F('min_year') + 200)  # Only include records with both years
             .annotate(
                 avg_year=Cast((F('min_year') + F('max_year')) / 2, IntegerField())
             )
@@ -700,4 +955,195 @@ class SummaryViewSet(DynamicDepthViewSet):
             for entry in avg_year_counts if entry["avg_year"] is not None
         ]
 
+        return summary
+    
+
+class DataSummaryViewSet(DynamicDepthViewSet):
+    """A viewset to return summary data."""
+    queryset = models.Inscription.objects.all()
+    serializer_class = serializers.SummarySerializer
+    filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
+    filterset_class = InscriptionFilter  # Use the same filter as InscriptionViewSet
+
+    def list(self, request, *args, **kwargs): 
+        # Query Parameters
+        q = (self.request.query_params.get('q') or '').strip()
+
+        # Base filter widget parameters
+        filter_mapping = {
+            'type_of_inscription': 'type_of_inscription__id__exact',
+            'writing_system': 'writing_system__id__exact',
+            'genre': 'genre__id__exact',
+            'tags': 'tags__id__exact',
+            'language': 'language__id__exact',
+            'panel': 'panel__id__exact',
+            'id': 'id',
+            'medium': 'panel__medium__id__exact',
+            'material': 'panel__material__exact',
+            'alignment': 'alignment__id__exact',
+            'condition': 'condition__id__exact',
+            'mentioned_person': 'mentioned_person__id__exact',
+            'panel_title_str': 'panel__title__startswith',
+            'inscription_title_str': 'title__startswith',
+        }
+
+        # Exact item selection parameters from autocomplete
+        search_mapping = {
+            'title': 'title__icontains',
+            'panel': 'panel__title__icontains',
+            'transcription': 'transcription__icontains',
+            'interpretative_edition': 'interpretative_edition__icontains',
+            'romanisation': 'romanisation__icontains',
+            'translation_eng': 'translation_eng__icontains',
+            'translation_ukr': 'translation_ukr__icontains',
+            'mentioned_person_name': 'mentioned_person__name__icontains',
+            'korniienko_image_title': 'korniienko_image__title__icontains',
+        }
+
+        # Filtering inscriptions (matching DataWidgetViewSet exactly)
+        inscriptions = _annotate_clean_fields(models.Inscription.objects.all())
+        for param, lookup in filter_mapping.items():
+            value = self.request.query_params.get(param)
+            if value:
+                inscriptions = inscriptions.filter(**{lookup: value})
+        # Two autocomplete modes:
+        # 1) q provided => partial text search across supported fields.
+        # 2) no q => exact field matching for selected autocomplete item(s).
+        if q:
+            inscriptions = inscriptions.filter(_build_search_q(q))
+        else:
+            for param, lookup in search_mapping.items():
+                value = self.request.query_params.get(param)
+                if value:
+                    inscriptions = inscriptions.filter(**{lookup: value})
+        inscriptions = inscriptions.distinct()
+        # Generate summary with filtered inscriptions
+        summary_data = self.summarize_results(inscriptions)
+        
+        return Response(summary_data)
+    
+    def summarize_results(self, queryset):
+        """Summarizes search results by creator and institution."""
+
+        summary = {
+            "type_of_inscription": [],
+            "writing_system": [],
+            "language": [],
+            "textual_genre": [],
+            "pictorial_description": [],
+            "min_year": [],
+            "max_year": [],
+            "avg_year": [],
+        }
+
+        # Count images per creator
+        type_of_inscription_counts = (
+            queryset
+            .values("type_of_inscription__text", "type_of_inscription__text_ukr")
+            .annotate(count=Count("id", distinct=True))
+            .order_by("-count")
+        )
+
+        # Count images per institution
+        writing_system_counts = (
+            queryset
+            .values("writing_system__text", "writing_system__text_ukr")
+            .annotate(count=Count("id", distinct=True))
+            .order_by("-count")
+        )
+        # Count of documentation types by site
+        language_counts = (
+            queryset
+            .values("language__text", "language__text_ukr")
+            .annotate(count=Count("id", distinct=True))
+            .order_by("-count")
+        )
+        # Summarise search results by motif type
+        textual_genre_counts = (
+            queryset
+            .values("genre__text", "genre__text_ukr")
+            .annotate(count=Count("id", distinct=True))
+            .order_by("-count")
+        )
+        # Show number of images for each year 
+        pictorial_description_counts = (
+            queryset
+            .values("tags__text", "tags__text_ukr")
+            .annotate(count=Count("id", distinct=True))
+            .order_by("-count")
+        )
+
+        min_year_counts = (
+            queryset
+            .values("min_year")
+            .annotate(count=Count("id", distinct=True))
+            .order_by("-count")
+        )
+        max_year_counts = (
+            queryset
+            .values("max_year")
+            .annotate(count=Count("id", distinct=True))
+            .order_by("-count")
+        )
+
+        # Calculate average year and group by it
+        avg_year_counts = (
+            queryset
+            .filter(min_year__isnull=False, max_year__isnull=False, max_year__lte=F('min_year') + 200)  # Only include records with both years
+            .annotate(
+                avg_year=Cast((F('min_year') + F('max_year')) / 2, IntegerField())
+            )
+            .values("avg_year")
+            .annotate(count=Count("id", distinct=True))
+            .order_by("avg_year")
+        )   
+
+        # Format summary
+        summary["type_of_inscription"] = [
+            {
+                "type": entry["type_of_inscription__text"], 
+                "type_ukr": entry["type_of_inscription__text_ukr"], 
+                "count": entry["count"]}
+            for entry in type_of_inscription_counts if entry["type_of_inscription__text"]
+        ]   
+        summary["writing_system"] = [
+            {
+                "writing_system": entry["writing_system__text"], 
+                "writing_system_ukr": entry["writing_system__text_ukr"],
+                "count": entry["count"]}
+            for entry in writing_system_counts if entry["writing_system__text"]
+        ]   
+        summary["language"] = [
+            {
+                "language": entry["language__text"], 
+                "language_ukr": entry["language__text_ukr"],
+                "count": entry["count"]}
+            for entry in language_counts if entry["language__text"]
+        ]
+        summary["textual_genre"] = [
+            {
+                "textual_genre": entry["genre__text"], 
+                "textual_genre_ukr": entry["genre__text_ukr"],
+                "count": entry["count"]}
+            for entry in textual_genre_counts if entry["genre__text"]
+        ]
+        summary["pictorial_description"] = [
+            {
+                "pictorial_description": entry["tags__text"], 
+                "pictorial_description_ukr": entry["tags__text_ukr"],
+                "count": entry["count"]}
+            for entry in pictorial_description_counts if entry["tags__text"]
+        ]
+        summary["min_year"] = [
+            {"min_year": entry["min_year"], "count": entry["count"]}
+            for entry in min_year_counts if entry["min_year"]
+        ]
+        summary["max_year"] = [
+            {"max_year": entry["max_year"], "count": entry["count"]}
+            for entry in max_year_counts if entry["max_year"]
+        ]
+        summary["avg_year"] = [
+            {"avg_year": entry["avg_year"], "count": entry["count"]}
+            for entry in avg_year_counts if entry["avg_year"] is not None
+        ]       
         return summary

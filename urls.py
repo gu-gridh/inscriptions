@@ -24,7 +24,14 @@ router.register(rf'{endpoint}/korniienko-image', views.KorniienkoImageViewSet, b
 router.register(rf'{endpoint}/object-rti', views.ObjectRTIViewSet, basename='object RTI')
 router.register(rf'{endpoint}/object-mesh-3d', views.ObjectMesh3DViewSet, basename='object Mesh 3D')
 router.register(rf'{endpoint}/inscription', views.InscriptionViewSet, basename='inscription')
+
+# new search view for inscriptions
+router.register(rf'{endpoint}/search', views.SearchInscriptionViewSet, basename= 'search inscriptions')
+# Automatic complete view for inscriptions
+router.register(rf'{endpoint}/autocomplete', views.AutoCompleteInscriptionViewSet, basename='autocomplete inscriptions')
+# view for inscriptions beginning by string for autocomplete, old version without autocomplete
 router.register(rf'{endpoint}/inscription-string', views.InscriptionStringViewSet, basename='inscriptions beginning by string')
+
 router.register(rf'{endpoint}/inscription-contributors', views.ContributorsViewSet, basename='contributors to inscription')
 router.register(rf'{endpoint}/annotation', views.AnnotationViewSet, basename='annotations')
 router.register(rf'{endpoint}/inscription-tags', views.InscriptionTagsViewSet, basename="tags for inscriptions")
@@ -32,8 +39,15 @@ router.register(rf'{endpoint}/tags-with-data', views.TagsWithDataViewSet, basena
 router.register(rf'{endpoint}/genre-with-data', views.GenreDataViewSet, basename="genre with data attached")
 router.register(rf'{endpoint}/writing-system-with-data', views.WritingSystemWithDataViewSet, basename="writing system with data attached")
 router.register(rf'{endpoint}/language-with-data', views.LanguageWithDataViewSet, basename="language with data attached")
+# views for data widgets including search and filter options
+router.register(rf'{endpoint}/data-widget', views.SearchDataWidgetViewSet, basename="data widget")
+# view for data widget with filters, old version without search
 router.register(rf'{endpoint}/inscriptions-info', views.DataWidgetViewSet, basename="data for widget")
+
 router.register(rf'{endpoint}/bibliography-item', views.BibliographyItemViewSet, basename="bibliography items")
+# view for data summary including counts and statistics
+router.register(rf'{endpoint}/data-summary', views.DataSummaryViewSet, basename="data for summary statistics")
+# view for summary statistics of the data old version
 router.register(rf'{endpoint}/summary', views.SummaryViewSet, basename="data summary")
 
 
