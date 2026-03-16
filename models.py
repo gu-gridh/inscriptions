@@ -519,6 +519,14 @@ class ObjectMesh3D(abstract.AbstractBaseModel):
     url = models.CharField(max_length=1024, blank=True, null=True, verbose_name=_("URL to location in storage"))
     panel = models.ForeignKey(Panel, null=True, blank=True, on_delete=models.CASCADE, related_name="attached_3Dmesh", verbose_name=_("Surface"))
     number_of_triangles = models.IntegerField(null=True, blank=True)
+
+    start_position_phi = models.FloatField(verbose_name="Phi", blank=True, default=0.0, max_length=12)
+    start_position_theta = models.FloatField(verbose_name="Theta", blank=True, default=0.0, max_length=12)
+    start_position_panX = models.FloatField(verbose_name="Pan X", blank=True, default=0.0, max_length=12)
+    start_position_panY = models.FloatField(verbose_name="Pan Y", blank=True, default=0.0, max_length=12)
+    start_position_panZ = models.FloatField(verbose_name="Pan Z", blank=True, default=0.0, max_length=12)
+    start_position_zoom = models.FloatField(verbose_name="Zoom", blank=True, default=0.0, max_length=12)
+    start_position_rotation = models.FloatField(verbose_name="Rotation", blank=True, default=0.0, max_length=12)
     
     def __str__(self) -> str:
         return f"{self.panel}"
