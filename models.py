@@ -426,6 +426,7 @@ class PanelOrInscription(models.IntegerChoices):
     
 
 class Image(abstract.AbstractTIFFImageModel):
+    zenodo_url = models.CharField(max_length=1024, blank=True, null=True, verbose_name=_("Zenodo URL location"))
     panel_or_inscription = models.IntegerField(choices=PanelOrInscription.choices, default=1, verbose_name=_("Surface or inscription"))
     panel = models.ForeignKey(Panel, null=True, blank=True, on_delete=models.CASCADE, related_name="images", verbose_name=_("Surface"))
     inscription = models.ForeignKey(Inscription, null=True, blank=True, on_delete=models.CASCADE, related_name="inscription")
